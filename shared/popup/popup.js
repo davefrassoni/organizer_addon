@@ -2,13 +2,22 @@ const api = globalThis.browser || globalThis.chrome;
 const $ = selector => document.querySelector(selector);
 let pendingImport;
 let currentSettings = { method: "ai", provider: "dave" };
-function message(action, extra = {}) { return globalThis.browser ? api.runtime.sendMessage({ action, ...extra }) : new Promise((resolve, reject) => api.runtime.sendMessage({ action, ...extra }, response => { const error = api.runtime.lastError; error ? reject(new Error(error.message)) : resolve(response); })); }
+function friendlyError(error, aiAction = false) {
+  const detail = String(error?.message || error || "");
+  if (/receiving end does not exist|could not establish connection|message port closed|no matching message handler/i.test(detail)) return aiAction
+    ? "Organizer lost contact with its background process. Your AI job may still be processing; reopen the popup. If this continues, reload the extension and try again."
+    : "Organizer's background process is unavailable. Reopen the popup; if this continues, reload the extension and try again.";
+  if (/timed out|timeout|aborted/i.test(detail)) return "The AI service is taking longer than expected. No tabs or bookmarks were changed. Please try again later; lower-priority jobs may be waiting in the queue.";
+  if (/failed to fetch|networkerror|network request failed/i.test(detail)) return "Organizer could not reach the AI service. Check your connection and try again; no tabs or bookmarks were changed.";
+  return detail || "Organizer could not complete this action.";
+}
+function message(action, extra = {}) { return globalThis.browser ? api.runtime.sendMessage({ action, ...extra }).catch(error => { throw new Error(friendlyError(error, action.startsWith("organize"))); }) : new Promise((resolve, reject) => api.runtime.sendMessage({ action, ...extra }, response => { const error = api.runtime.lastError; error ? reject(new Error(friendlyError(error, action.startsWith("organize")))) : resolve(response); })); }
 function status(text, type = "") { const node = $("#status"); node.className = type; node.textContent = text; }
 function setOrganizeBusy(busy, activeId = "") { for (const id of ["#organize-tabs", "#organize-bookmarks"]) { const button = $(id); button.disabled = busy; button.classList.toggle("loading", busy && id === activeId); } }
 async function run(action, extra = {}, success = "Done.") {
   status("Working…", "busy");
   try { const response = await message(action, extra); if (!response?.ok) throw new Error(response?.error || "The extension background process did not respond. Reload the extension and try again."); status(success, "success"); await render(); return response.result; }
-  catch (error) { status(error.message, "error"); }
+  catch (error) { status(friendlyError(error), "error"); }
 }
 function requestAiAccess() {
   if (currentSettings.method !== "ai" || !api.permissions) return Promise.resolve(true);
@@ -34,7 +43,7 @@ async function organize(action, success, activeId) {
     status(success, "success");
     await render();
   } catch (error) {
-    status(error.message || "Organizer could not complete the AI job.", "error");
+    status(friendlyError(error, true), "error");
   } finally {
     clearInterval(ticker);
     setOrganizeBusy(false);
@@ -67,4 +76,4 @@ document.querySelectorAll("[data-export]").forEach(button => button.onclick = as
 document.querySelectorAll("[data-import]").forEach(button => button.onclick = () => { pendingImport = button.dataset.import; $("#file").click(); });
 $("#file").onchange = async event => { try { const parsed = JSON.parse(await event.target.files[0].text()); if (parsed.format !== "organizer-addon" || parsed.type !== pendingImport || !Array.isArray(parsed.items)) throw new Error("This is not a compatible Organizer backup."); await run("import", { store: pendingImport, items: parsed.items }, "Backup imported."); } catch (error) { $("#status").className = "error"; $("#status").textContent = error.message; } event.target.value = ""; };
 setOrganizeBusy(true);
-Promise.all([loadSettings(), render()]).then(() => setOrganizeBusy(false)).catch(error => status(error.message || "Could not connect to the extension background process. Reload the extension and try again.", "error"));
+Promise.all([loadSettings(), render()]).then(() => setOrganizeBusy(false)).catch(error => status(friendlyError(error), "error"));

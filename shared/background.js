@@ -92,7 +92,7 @@ async function daveAI(items, kind, config) {
     if (job.status === "completed") return normalizeAssignments(job.result, items.length);
     if (["failed", "delivery_failed"].includes(job.status)) throw new Error(job.error || "Dave AI could not organize these items.");
   }
-  throw new Error("Dave AI timed out.");
+  throw new Error("The AI request timed out before every processing batch finished.");
 }
 
 async function vendorAI(items, kind, config) {
