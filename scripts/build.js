@@ -13,6 +13,14 @@ for (const browser of ["firefox", "chrome"]) {
   fs.mkdirSync(path.join(root, "dist"), { recursive: true });
   const zip = path.join(root, "dist", `organizer-${browser}-v${version}.zip`);
   fs.rmSync(zip, { force: true });
-  execFileSync("zip", ["-qr", zip, "."], { cwd: target });
+  const entries = fs.readdirSync(target);
+  try {
+    execFileSync("zip", ["-qr", zip, ...entries], { cwd: target });
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+    // Windows ships bsdtar but not `zip`. Passing explicit root entries avoids
+    // the `./manifest.json` path that Firefox rejects as a missing manifest.
+    execFileSync("tar", ["-a", "-cf", zip, ...entries], { cwd: target });
+  }
 }
 console.log(`Built Firefox and Chrome v${version}.`);
