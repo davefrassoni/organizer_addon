@@ -3,6 +3,7 @@
 <main>
   <section class="actions"><button id="save-close">Save as session & close</button><button id="save-tabs">Back up tabs</button><button id="save-bookmarks">Back up bookmarks</button><button id="organize-tabs">🤖 Organize tabs</button><button id="organize-bookmarks">🤖 Organize bookmarks</button></section>
   <div id="status" role="status"></div>
+  <section id="ai-jobs" hidden><div class="section-title"><h2>AI processing</h2></div><div id="ai-jobs-list" class="list"></div></section>
   <section><div class="section-title"><h2>Tab sessions</h2><span><button data-export="tabSessions" class="small">Export</button><button data-import="tabSessions" class="small">Import</button></span></div><div id="tabs-list" class="list"></div></section>
   <section><div class="section-title"><h2>Bookmark backups</h2><span><button data-export="bookmarkBackups" class="small">Export</button><button data-import="bookmarkBackups" class="small">Import</button></span></div><div id="bookmarks-list" class="list"></div></section>
 </main><input id="file" type="file" accept="application/json" hidden><script src="popup.js"></script></body></html>

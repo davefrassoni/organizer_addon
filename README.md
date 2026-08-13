@@ -6,6 +6,8 @@ Organization always creates a backup first. Dave AI is the default organization 
 
 AI collections are processed in batches of at most 50 links. A second 18,000-byte input cap automatically makes smaller batches for unusually long titles, URLs, or metadata; this leaves safe input and output headroom in the worker's 8k model context. Dave AI coordinates those batches under one parent request. If that request fails, expires, or is cancelled by the add-on, all unfinished child jobs are cancelled and their queued prompts are cleared.
 
+Large Dave AI bookmark jobs are resumable. The extension stores the parent job ID, progress, and browser bookmark IDs locally, then uses a 30-second browser alarm to continue polling after the popup closes or a Manifest V3 service worker restarts. Once every AI batch completes, folder creation and bookmark moves are checkpointed locally after each step. Bookmark URLs are not duplicated into this recovery record. Reopening the popup shows batch and application progress and provides a cancel action.
+
 ## Privacy and AI
 
 The built-in organization method is local and sends nothing anywhere. AI is the default method; when the user organizes, titles and URLs are sent to the chosen provider after permission is granted. Vendor keys are supplied by the user, stored in local extension storage, and sent only to that vendor. Dave AI requires no user secret and accepts only a strict, size-limited link categorization schema—never arbitrary prompts. See [PRIVACY.md](PRIVACY.md).

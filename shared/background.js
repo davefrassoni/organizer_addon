@@ -2,7 +2,7 @@
 if (typeof OrganizerTopSites === "undefined" && typeof importScripts === "function") importScripts("top-sites.js");
 if (typeof OrganizerCategories === "undefined" && typeof importScripts === "function") importScripts("categories.js");
 const api = globalThis.browser || globalThis.chrome;
-const STORE = { tabs: "tabSessions", bookmarks: "bookmarkBackups", settings: "organizerSettings" };
+const STORE = { tabs: "tabSessions", bookmarks: "bookmarkBackups", settings: "organizerSettings", aiJobs: "organizerAiJobs" };
 const DEFAULTS = { method: "ai", provider: "dave", apiKeys: {}, model: "", tabFallback: "reorder", closeDuplicateTabs: false, removeDuplicateBookmarks: false };
 const DAVE_AI_ENDPOINT = "https://davefrassoni.com";
 const PUBLIC_CLIENT_KEY = "organizer-addon-v1"; // Identifier, not a secret. Server validation provides security.
@@ -13,7 +13,10 @@ const AI_BATCH_MAX_BYTES = 18000;
 const DAVE_JOB_TIMEOUT_MS = 2 * 60 * 60 * 1000;
 const DAVE_FETCH_TIMEOUT_MS = 20000;
 const DAVE_POLL_INTERVAL_MS = 2000;
+const DAVE_JOB_ALARM = "organizer-dave-ai-jobs";
+const ACTIVE_JOB_STATES = new Set(["queued", "processing", "applying"]);
 const ALLOWED_URL = /^(https?|ftp):\/\//i;
+let jobOperation = Promise.resolve();
 
 const call = (object, method, ...args) => new Promise((resolve, reject) => {
   if (globalThis.browser) {
@@ -34,6 +37,11 @@ const call = (object, method, ...args) => new Promise((resolve, reject) => {
 const getLocal = keys => call(api.storage.local, "get", keys);
 const setLocal = values => call(api.storage.local, "set", values);
 const queryTabs = query => call(api.tabs, "query", query);
+const serializeJobs = operation => {
+  const result = jobOperation.then(operation, operation);
+  jobOperation = result.catch(() => {});
+  return result;
+};
 
 function id() { return `${Date.now()}-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)}`; }
 function cleanTab(tab) { return { url: tab.url, title: tab.title || tab.url, pinned: !!tab.pinned }; }
@@ -85,6 +93,32 @@ function normalizeAssignments(raw, length) {
   return Array.from({ length }, (_, index) => ({ index, category: map.get(index) || "Other" }));
 }
 
+async function storedAiJobs() { return (await getLocal({ [STORE.aiJobs]: {} }))[STORE.aiJobs] || {}; }
+async function saveAiJobs(jobs) { await setLocal({ [STORE.aiJobs]: jobs }); }
+function publicAiJob(job) {
+  if (!job) return null;
+  const { id: jobId, kind, state, count, progress, applyProgress, createdAt, updatedAt, error, categories } = job;
+  return { id: jobId, kind, state, count, progress, applyProgress, createdAt, updatedAt, error, categories };
+}
+async function publicAiJobs() {
+  const jobs = await storedAiJobs();
+  return Object.fromEntries(Object.entries(jobs).map(([kind, job]) => [kind, publicAiJob(job)]));
+}
+
+function createDaveJobAlarm() {
+  if (!api.alarms) return;
+  try {
+    const result = api.alarms.create(DAVE_JOB_ALARM, { delayInMinutes: 0.5, periodInMinutes: 0.5 });
+    if (result?.catch) result.catch(() => {});
+  } catch (_) {}
+}
+async function syncDaveJobAlarm() {
+  if (!api.alarms) return;
+  const jobs = await storedAiJobs();
+  if (Object.values(jobs).some(job => ACTIVE_JOB_STATES.has(job.state))) createDaveJobAlarm();
+  else await call(api.alarms, "clear", DAVE_JOB_ALARM).catch(() => {});
+}
+
 async function daveFetch(path, options = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), DAVE_FETCH_TIMEOUT_MS);
@@ -105,6 +139,143 @@ async function cancelDaveJob(jobId) {
     // The server also owns an expiry deadline, so a failed best-effort cancel
     // cannot leave this parent request claimable forever.
   }
+}
+
+async function startDaveBookmarkJob(items) {
+  return serializeJobs(async () => {
+    const jobs = await storedAiJobs();
+    if (jobs.bookmarks && ACTIVE_JOB_STATES.has(jobs.bookmarks.state)) throw new Error("A bookmark organization job is already running.");
+    const response = await daveFetch("/api/ai/organizer/jobs/", { method: "POST", headers: { "Content-Type": "application/json", "X-Organizer-Client": PUBLIC_CLIENT_KEY }, body: JSON.stringify({ kind: "bookmarks", items }) });
+    if (!response.ok) throw new Error((await response.json().catch(() => ({}))).detail || `Dave AI returned ${response.status}.`);
+    const created = await response.json();
+    const now = new Date().toISOString();
+    const job = {
+      id: created.id,
+      kind: "bookmarks",
+      state: created.status || "queued",
+      count: items.length,
+      progress: { completed: 0, total: created.chunks || 1 },
+      applyProgress: 0,
+      bookmarkRefs: items.map(item => ({ id: item.id })),
+      createdAt: now,
+      updatedAt: now,
+      expiresAt: created.expires_at || null,
+      error: "",
+    };
+    jobs.bookmarks = job;
+    await saveAiJobs(jobs);
+    createDaveJobAlarm();
+    return { pending: true, job: publicAiJob(job) };
+  });
+}
+
+async function applyBookmarkJob(jobs, job) {
+  if (!job.rootId) {
+    const root = await call(api.bookmarks, "create", { title: `Organizer ${new Date(job.createdAt).toLocaleDateString()}` });
+    job.rootId = root.id;
+    job.folderIds = {};
+    job.updatedAt = new Date().toISOString();
+    await saveAiJobs(jobs);
+  }
+  job.folderIds ||= {};
+  job.skipped ||= 0;
+  for (let position = job.applyProgress || 0; position < job.assignments.length; position++) {
+    const row = job.assignments[position];
+    let folderId = job.folderIds[row.category];
+    if (!folderId) {
+      const folder = await call(api.bookmarks, "create", { parentId: job.rootId, title: row.category });
+      folderId = folder.id;
+      job.folderIds[row.category] = folderId;
+      job.updatedAt = new Date().toISOString();
+      await saveAiJobs(jobs);
+    }
+    const bookmark = job.bookmarkRefs[row.index];
+    try {
+      if (bookmark?.id) await call(api.bookmarks, "move", bookmark.id, { parentId: folderId });
+      else job.skipped += 1;
+    } catch (error) {
+      if (/not found|can't find|invalid bookmark/i.test(String(error?.message || error))) job.skipped += 1;
+      else throw error;
+    }
+    job.applyProgress = position + 1;
+    job.updatedAt = new Date().toISOString();
+    await saveAiJobs(jobs);
+  }
+  job.state = "completed";
+  job.categories = Object.keys(job.folderIds).length;
+  job.error = job.skipped ? `${job.skipped} bookmarks no longer existed and were skipped.` : "";
+  job.updatedAt = new Date().toISOString();
+  delete job.assignments;
+  delete job.bookmarkRefs;
+  delete job.folderIds;
+  await saveAiJobs(jobs);
+}
+
+async function pollDaveBookmarkJob(jobs, job) {
+  if (job.state === "applying") return applyBookmarkJob(jobs, job);
+  const response = await daveFetch(`/api/ai/organizer/jobs/${job.id}/`, { headers: { "X-Organizer-Client": PUBLIC_CLIENT_KEY } });
+  const remote = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(remote.detail || `Dave AI returned ${response.status}.`);
+  job.progress = remote.progress || job.progress;
+  job.updatedAt = new Date().toISOString();
+  if (remote.status === "completed") {
+    job.assignments = normalizeAssignments(remote.result, job.bookmarkRefs.length);
+    job.state = "applying";
+    job.applyProgress = job.applyProgress || 0;
+    job.retryCount = 0;
+    job.error = "";
+    await saveAiJobs(jobs);
+    return applyBookmarkJob(jobs, job);
+  }
+  if (["failed", "cancelled"].includes(remote.status)) {
+    job.state = remote.status;
+    job.error = remote.error || "Dave AI could not organize these bookmarks.";
+    delete job.bookmarkRefs;
+  } else {
+    job.state = remote.status || "processing";
+    job.error = "";
+  }
+  await saveAiJobs(jobs);
+}
+
+function resumeDaveBookmarkJobs() {
+  return serializeJobs(async () => {
+    const jobs = await storedAiJobs();
+    const job = jobs.bookmarks;
+    if (!job || !ACTIVE_JOB_STATES.has(job.state)) return;
+    try {
+      await pollDaveBookmarkJob(jobs, job);
+    } catch (error) {
+      job.retryCount = (job.retryCount || 0) + 1;
+      job.lastError = String(error?.message || error).slice(0, 500);
+      job.updatedAt = new Date().toISOString();
+      if (job.state === "applying" && job.retryCount >= 5) {
+        job.state = "failed";
+        job.error = `The AI finished, but Organizer could not apply the bookmark folders: ${job.lastError}`;
+      }
+      await saveAiJobs(jobs);
+    } finally {
+      await syncDaveJobAlarm();
+    }
+  });
+}
+
+async function cancelStoredAiJob(jobId) {
+  return serializeJobs(async () => {
+    const jobs = await storedAiJobs();
+    const job = Object.values(jobs).find(candidate => candidate?.id === jobId);
+    if (!job) throw new Error("AI job not found.");
+    if (!ACTIVE_JOB_STATES.has(job.state)) return publicAiJob(job);
+    await cancelDaveJob(job.id);
+    job.state = "cancelled";
+    job.error = "Cancelled by you.";
+    job.updatedAt = new Date().toISOString();
+    delete job.bookmarkRefs;
+    delete job.assignments;
+    await saveAiJobs(jobs);
+    await syncDaveJobAlarm();
+    return publicAiJob(job);
+  });
 }
 
 async function daveAI(items, kind, config) {
@@ -165,6 +336,7 @@ async function organizeBookmarks() {
     for (const item of split.duplicates) await call(api.bookmarks, "remove", item.id);
     items = split.unique;
   }
+  if (config.method === "ai" && config.provider === "dave") return startDaveBookmarkJob(items);
   const assignments = await assign(items, "bookmarks", config);
   const groups = assignments.reduce((all, row) => ((all[row.category] ||= []).push(row), all), {});
   const root = await call(api.bookmarks, "create", { title: `Organizer ${new Date().toLocaleDateString()}` });
@@ -205,7 +377,10 @@ async function organizeTabs() {
 
 api.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   (async () => {
-    if (message.action === "list") return await getLocal({ [STORE.tabs]: [], [STORE.bookmarks]: [] });
+    if (message.action === "list") {
+      void resumeDaveBookmarkJobs();
+      return { ...(await getLocal({ [STORE.tabs]: [], [STORE.bookmarks]: [] })), aiJobs: await publicAiJobs() };
+    }
     if (message.action === "saveTabs") return saveTabs(message.closeAfter);
     if (message.action === "saveBookmarks") return saveBookmarks();
     if (message.action === "restoreTabs") { const data = await getLocal({ [STORE.tabs]: [] }); const item = data[STORE.tabs].find(x => x.id === message.id); if (!item) throw new Error("Backup not found."); return call(api.windows, "create", { url: item.tabs.map(x => x.url) }); }
@@ -214,7 +389,16 @@ api.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.action === "import") { if (![STORE.tabs, STORE.bookmarks].includes(message.store) || !Array.isArray(message.items)) throw new Error("Invalid backup file."); const data = await getLocal({ [message.store]: [] }); await setLocal({ [message.store]: [...message.items, ...data[message.store]] }); return true; }
     if (message.action === "organizeTabs") return organizeTabs();
     if (message.action === "organizeBookmarks") return organizeBookmarks();
+    if (message.action === "cancelAiJob") return cancelStoredAiJob(message.id);
+    if (message.action === "refreshAiJobs") { void resumeDaveBookmarkJobs(); return publicAiJobs(); }
     throw new Error("Unknown action.");
   })().then(result => sendResponse({ ok: true, result }), error => sendResponse({ ok: false, error: error.message }));
   return true;
 });
+
+if (api.alarms) {
+  api.alarms.onAlarm.addListener(alarm => { if (alarm.name === DAVE_JOB_ALARM) void resumeDaveBookmarkJobs(); });
+  if (api.runtime.onStartup) api.runtime.onStartup.addListener(() => { void resumeDaveBookmarkJobs(); });
+  if (api.runtime.onInstalled) api.runtime.onInstalled.addListener(() => { void resumeDaveBookmarkJobs(); });
+  void syncDaveJobAlarm().then(() => resumeDaveBookmarkJobs());
+}
