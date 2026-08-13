@@ -66,7 +66,7 @@ async function render() {
 }
 function countBookmarks(nodes) { return (nodes || []).reduce((sum, x) => sum + (x.url ? 1 : 0) + countBookmarks(x.children), 0); }
 async function loadSettings() { const stored = await api.storage.local.get({ organizerSettings: currentSettings }); currentSettings = { ...currentSettings, ...stored.organizerSettings }; }
-$("#save-close").onclick = () => run("saveTabs", { closeAfter: true }, "Tabs saved.");
+$("#save-close").onclick = () => run("saveTabs", { closeAfter: true }, "Session saved; window closed.");
 $("#save-tabs").onclick = () => run("saveTabs", {}, "Tabs backed up.");
 $("#save-bookmarks").onclick = () => run("saveBookmarks", {}, "Bookmarks backed up.");
 $("#organize-tabs").onclick = () => organize("organizeTabs", "Tabs organized; a backup was saved first.", "#organize-tabs");
