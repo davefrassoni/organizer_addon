@@ -83,7 +83,7 @@ async function daveAI(items, kind, config) {
   const response = await fetch(`${DAVE_AI_ENDPOINT}/api/ai/organizer/jobs/`, { method: "POST", headers: { "Content-Type": "application/json", "X-Organizer-Client": PUBLIC_CLIENT_KEY }, body: JSON.stringify({ kind, items }) });
   if (!response.ok) throw new Error((await response.json().catch(() => ({}))).detail || `Dave AI returned ${response.status}.`);
   const created = await response.json();
-  for (let attempt = 0; attempt < 60; attempt++) {
+  for (let attempt = 0; attempt < 300; attempt++) {
     await new Promise(resolve => setTimeout(resolve, 2000));
     const poll = await fetch(`${DAVE_AI_ENDPOINT}/api/ai/organizer/jobs/${created.id}/`, { headers: { "X-Organizer-Client": PUBLIC_CLIENT_KEY } });
     const job = await poll.json();
@@ -110,7 +110,8 @@ async function vendorAI(items, kind, config) {
 async function assign(items, kind) {
   const config = await settings();
   if (config.method !== "ai") return OrganizerCategories.assignments(items);
-  const assignBatch = batch => config.provider === "dave" ? daveAI(batch, kind, config) : vendorAI(batch, kind, config);
+  if (config.provider === "dave") return daveAI(items, kind, config);
+  const assignBatch = batch => vendorAI(batch, kind, config);
   return OrganizerCategories.batchedAssignments(items, AI_BATCH_SIZE, assignBatch);
 }
 
