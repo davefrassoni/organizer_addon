@@ -5,7 +5,8 @@ const STORE = { tabs: "tabSessions", bookmarks: "bookmarkBackups", settings: "or
 const DEFAULTS = { method: "ai", provider: "dave", apiKeys: {}, model: "" };
 const DAVE_AI_ENDPOINT = "https://davefrassoni.com";
 const PUBLIC_CLIENT_KEY = "organizer-addon-v1"; // Identifier, not a secret. Server validation provides security.
-const AI_BATCH_SIZE = 200;
+// Smaller batches keep local and hosted models from truncating long assignment arrays.
+const AI_BATCH_SIZE = 50;
 const ALLOWED_URL = /^(https?|ftp):\/\//i;
 
 const call = (object, method, ...args) => new Promise((resolve, reject) => {
