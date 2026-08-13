@@ -73,12 +73,31 @@ async function saveBookmarks() {
   return backup;
 }
 
+function countBookmarksIn(node) { return node.url ? (ALLOWED_URL.test(node.url) ? 1 : 0) : (node.children || []).reduce((sum, child) => sum + countBookmarksIn(child), 0); }
+function representativeUrl(node) {
+  if (node.url) return ALLOWED_URL.test(node.url) ? node.url : null;
+  for (const child of node.children || []) { const url = representativeUrl(child); if (url) return url; }
+  return null;
+}
+function folderHostnames(node, out = new Set()) {
+  if (node.url) { try { out.add(new URL(node.url).hostname.replace(/^www\./, "")); } catch (_) {} }
+  else for (const child of node.children || []) folderHostnames(child, out);
+  return out;
+}
 // Only direct children of a root (Bookmarks Bar / Other Bookmarks / Mobile
 // Bookmarks) are "loose" — bookmarks already filed into a user-made folder
 // are left untouched so organizing never empties folders the user built.
+// Folders that directly sit in a root and contain at least one bookmark are
+// sent and moved as a single unit (their contents move with them, intact)
+// instead of being skipped entirely or broken apart.
 function collectLooseBookmarks(roots) {
   const out = [];
-  for (const root of roots) for (const node of root.children || []) if (node.url && ALLOWED_URL.test(node.url)) out.push({ id: node.id, title: node.title, url: node.url, rootId: root.id });
+  for (const root of roots) {
+    for (const node of root.children || []) {
+      if (node.url && ALLOWED_URL.test(node.url)) out.push({ id: node.id, title: node.title, url: node.url, rootId: root.id });
+      else if (node.children && countBookmarksIn(node) > 0) out.push({ id: node.id, title: node.title || t("bgImportedFolderTitle"), url: representativeUrl(node), rootId: root.id, isFolder: true, metaTags: Array.from(folderHostnames(node)).slice(0, 20) });
+    }
+  }
   return out;
 }
 function flattenBookmarkNode(nodes, rootId, out) {
@@ -182,8 +201,6 @@ async function cancelDaveJob(jobId) {
   }
 }
 
-function organizerFolderTitle() { return `${t("bgOrganizerFolderPrefix")} ${new Date().toLocaleDateString()}`; }
-
 async function startDaveJob(kind, items, meta = {}) {
   return serializeJobs(async () => {
     const jobs = await storedAiJobs();
@@ -215,25 +232,19 @@ async function startDaveJob(kind, items, meta = {}) {
 }
 
 async function applyBookmarkJob(jobs, job) {
-  job.rootFolders ||= {};
   job.folderIds ||= {};
   job.skipped ||= 0;
+  // Category folders are created directly inside the bookmark's own root
+  // (the toolbar / Other Bookmarks / Mobile Bookmarks) — no intermediate
+  // "Organizer <date>" wrapper folder.
   for (let position = job.applyProgress || 0; position < job.assignments.length; position++) {
     const row = job.assignments[position];
     const ref = job.refs[position];
     const rootId = ref?.rootId;
-    let rootFolderId = job.rootFolders[rootId];
-    if (!rootFolderId) {
-      const folder = await call(api.bookmarks, "create", { parentId: rootId, title: job.folderTitle });
-      rootFolderId = folder.id;
-      job.rootFolders[rootId] = rootFolderId;
-      job.updatedAt = new Date().toISOString();
-      await saveAiJobs(jobs);
-    }
     const folderKey = `${rootId}:${row.category}`;
     let folderId = job.folderIds[folderKey];
     if (!folderId) {
-      const folder = await call(api.bookmarks, "create", { parentId: rootFolderId, title: row.category });
+      const folder = await call(api.bookmarks, "create", { parentId: rootId, title: row.category });
       folderId = folder.id;
       job.folderIds[folderKey] = folderId;
       job.updatedAt = new Date().toISOString();
@@ -257,7 +268,6 @@ async function applyBookmarkJob(jobs, job) {
   delete job.assignments;
   delete job.refs;
   delete job.folderIds;
-  delete job.rootFolders;
   await saveAiJobs(jobs);
 }
 
@@ -428,6 +438,15 @@ async function cancelStoredAiJob(jobId) {
   });
 }
 
+async function dismissAiJob(jobId) {
+  return serializeJobs(async () => {
+    const jobs = await storedAiJobs();
+    for (const kind of JOB_KINDS) if (jobs[kind]?.id === jobId && !ACTIVE_JOB_STATES.has(jobs[kind].state)) delete jobs[kind];
+    await saveAiJobs(jobs);
+    return true;
+  });
+}
+
 async function vendorAI(items, kind, config) {
   const key = config.apiKeys && config.apiKeys[config.provider];
   if (!key) throw new Error(t("bgAddApiKey", [config.provider]));
@@ -444,7 +463,7 @@ async function vendorAI(items, kind, config) {
 
 async function assign(items, kind, selectedSettings = null) {
   const config = selectedSettings || await settings();
-  const payload = items.map(({ title, url }) => ({ title: title || "", url }));
+  const payload = items.map(({ title, url, metaTags }) => (metaTags ? { title: title || "", url, metaTags } : { title: title || "", url }));
   if (config.method !== "ai") return OrganizerCategories.assignments(payload);
   const assignBatch = batch => vendorAI(batch, kind, config);
   return OrganizerCategories.batchedAssignments(payload, AI_BATCH_SIZE, assignBatch, AI_BATCH_MAX_BYTES);
@@ -457,14 +476,17 @@ async function organizeBookmarks() {
   let items = config.bookmarkScope === "all" ? collectAllBookmarks(roots) : collectLooseBookmarks(roots);
   if (!items.length) throw new Error(t("bgNoBookmarksToOrganize"));
   if (config.removeDuplicateBookmarks) {
-    const split = OrganizerCategories.splitDuplicateUrls(items);
+    // Folders are never candidates for duplicate removal — only the
+    // individual bookmarks sent alongside them.
+    const dedupable = items.filter(item => !item.isFolder);
+    const untouched = items.filter(item => item.isFolder);
+    const split = OrganizerCategories.splitDuplicateUrls(dedupable);
     for (const item of split.duplicates) await call(api.bookmarks, "remove", item.id);
-    items = split.unique;
+    items = [...split.unique, ...untouched];
   }
-  const meta = { folderTitle: organizerFolderTitle() };
-  if (config.method === "ai" && config.provider === "dave") return startDaveJob("bookmarks", items, meta);
+  if (config.method === "ai" && config.provider === "dave") return startDaveJob("bookmarks", items);
   const assignments = await assign(items, "bookmarks", config);
-  return startLocalApplyJob("bookmarks", items, assignments, meta);
+  return startLocalApplyJob("bookmarks", items, assignments);
 }
 
 async function organizeTabs() {
@@ -499,6 +521,7 @@ api.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.action === "organizeTabs") return organizeTabs();
     if (message.action === "organizeBookmarks") return organizeBookmarks();
     if (message.action === "cancelAiJob") return cancelStoredAiJob(message.id);
+    if (message.action === "dismissAiJob") return dismissAiJob(message.id);
     if (message.action === "refreshAiJobs") { void resumeJobs(); return publicAiJobs(); }
     throw new Error(t("bgUnknownAction"));
   })().then(result => sendResponse({ ok: true, result }), error => sendResponse({ ok: false, error: error.message }));

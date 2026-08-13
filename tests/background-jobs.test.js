@@ -137,9 +137,10 @@ test("a 300-bookmark Dave job resumes after a background restart and applies eve
   assert.equal(job.categories, 3);
   assert.equal(job.refs, undefined);
   assert.equal(shared.alarms["organizer-ai-jobs"], undefined);
-  // Every root-level "Organizer <date>" folder and category folder is created
-  // inside the bookmark's own root (id "1"), never left to the browser default.
-  assert.ok(shared.created.every(node => node.parentId === "1" || Object.values(shared.created).some(f => f.id === node.parentId)));
+  // Every category folder is created directly inside the bookmark's own root
+  // (id "1") — no intermediate wrapper folder, never left to the browser default.
+  assert.equal(shared.created.length, 3);
+  assert.ok(shared.created.every(node => node.parentId === "1"));
 });
 
 test("a Dave tab-organize job resumes after a background restart and groups every tab", async () => {
@@ -179,15 +180,19 @@ test("a built-in (non-Dave) bookmark job is resumable if interrupted mid-apply",
   assert.equal(shared.moves.length, 120);
 });
 
-test("reorganizing bookmarks with the default loose scope leaves user folders untouched", async () => {
+test("reorganizing bookmarks with the default loose scope moves loose bookmarks and top-level folders as whole units", async () => {
   const looseBookmarks = [
     { id: "loose-1", title: "Loose 1", url: "https://example.com/loose1" },
     { id: "loose-2", title: "Loose 2", url: "https://example.com/loose2" },
   ];
-  const folderedBookmarks = [{ id: "kept-1", title: "Kept", url: "https://example.com/kept" }];
+  const nested = [{ id: "buried-1", title: "Buried", url: "https://example.com/buried" }];
+  const folderContents = [
+    { id: "kept-1", title: "Kept", url: "https://example.com/kept" },
+    { id: "nested-folder", title: "Nested", children: nested },
+  ];
   const tree = [{
     id: "0", title: "", children: [
-      { id: "1", title: "Bookmarks Bar", children: [{ id: "folder-a", title: "My Folder", children: folderedBookmarks }, ...looseBookmarks] },
+      { id: "1", title: "Bookmarks Bar", children: [{ id: "folder-a", title: "My Folder", children: folderContents }, ...looseBookmarks] },
       { id: "2", title: "Other Bookmarks", children: [] },
     ],
   }];
@@ -195,13 +200,17 @@ test("reorganizing bookmarks with the default loose scope leaves user folders un
   const worker = backgroundHarness(shared, {});
   const result = await worker.message("organizeBookmarks");
   assert.equal(result.ok, true);
-  assert.equal(shared.moves.length, 2, "only the two loose bookmarks should move");
-  assert.ok(shared.moves.every(move => move.id === "loose-1" || move.id === "loose-2"));
-  assert.ok(!shared.moves.some(move => move.id === "kept-1"), "bookmarks already inside a user folder must not move");
-  // The new "Organizer <date>" root is created inside the same root ("1")
-  // the loose bookmarks came from, not the browser's default location.
-  const organizerRoot = shared.created.find(node => node.parentId === "1" && !node.url);
-  assert.ok(organizerRoot, "an Organizer root folder should be created under root 1");
+  // Only three things ever move: the two loose bookmarks and the top-level
+  // folder itself, as one unit — never its nested contents individually.
+  assert.equal(shared.moves.length, 3);
+  assert.ok(shared.moves.some(move => move.id === "folder-a"), "the top-level folder should be sent and moved as a unit");
+  assert.ok(shared.moves.some(move => move.id === "loose-1"));
+  assert.ok(shared.moves.some(move => move.id === "loose-2"));
+  assert.ok(!shared.moves.some(move => ["kept-1", "buried-1", "nested-folder"].includes(move.id)), "a folder's own contents move with it, not individually");
+  // The category folder is created directly inside root "1" — no
+  // intermediate "Organizer <date>" wrapper folder.
+  const categoryFolders = shared.created.filter(node => node.parentId === "1" && !node.url);
+  assert.equal(categoryFolders.length, 1, "exactly one category folder, no extra wrapper folder");
 });
 
 test("reorganizing bookmarks with scope 'all' also recategorizes bookmarks already in folders", async () => {

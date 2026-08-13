@@ -1,137 +1,392 @@
 {
-  "extDescription": { "message": "Haz copias de seguridad, restaura, importa, exporta y organiza pestañas y marcadores." },
-
-  "popupTitle": { "message": "Organizer" },
-  "popupSubtitle": { "message": "Pestañas y marcadores, respaldados de forma segura." },
-  "settingsButtonTitle": { "message": "Configuración" },
-  "organizeTabsButton": { "message": "Organizar pestañas" },
-  "organizeBookmarksButton": { "message": "Organizar marcadores" },
-  "saveCloseButton": { "message": "Guardar como sesión y cerrar" },
-  "saveTabsButton": { "message": "Respaldar pestañas" },
-  "saveBookmarksButton": { "message": "Respaldar marcadores" },
-  "aiProcessingHeading": { "message": "Procesamiento con IA" },
-  "tabSessionsHeading": { "message": "Sesiones de pestañas" },
-  "bookmarkBackupsHeading": { "message": "Copias de marcadores" },
-  "exportButton": { "message": "Exportar" },
-  "importButton": { "message": "Importar" },
-  "noSessionsYet": { "message": "Aún no hay sesiones guardadas." },
-  "noBackupsYet": { "message": "Aún no hay copias de marcadores." },
-  "restoreButton": { "message": "Restaurar" },
-  "deleteButton": { "message": "Eliminar" },
-  "confirmDeleteBackup": { "message": "¿Eliminar esta copia de seguridad?" },
-  "backupDeleted": { "message": "Copia de seguridad eliminada." },
-  "backupRestored": { "message": "Copia de seguridad restaurada." },
-  "backupImported": { "message": "Copia de seguridad importada." },
-  "incompatibleBackupFile": { "message": "Este archivo no es una copia de seguridad compatible con Organizer." },
-  "itemsCount": { "message": "$1 elementos" },
-  "statusWorking": { "message": "Procesando…" },
-  "statusDone": { "message": "Listo." },
-  "preparingAiAccess": { "message": "Preparando acceso a la IA…" },
-  "aiAccessRequired": { "message": "Se necesita acceso a la IA para el método de organización seleccionado. Puedes elegir el método sin conexión en Configuración." },
-  "creatingBackupSendingAi": { "message": "Creando una copia de seguridad y enviando enlaces a la IA…" },
-  "aiProcessingTicker": { "message": "La IA está procesando… $1s. Puedes mantener esta ventana abierta." },
-  "aiProcessingStarted": { "message": "Se inició el procesamiento con IA para $1 $2. Puedes cerrar esta ventana; Organizer continuará en segundo plano." },
-  "tabsOrganizedSuccess": { "message": "Pestañas organizadas; primero se guardó una copia de seguridad." },
-  "bookmarksOrganizedSuccess": { "message": "Marcadores organizados; primero se guardó una copia de seguridad." },
-  "sessionSavedClosed": { "message": "Sesión guardada; ventana cerrada." },
-  "tabsBackedUp": { "message": "Pestañas respaldadas." },
-  "bookmarksBackedUp": { "message": "Marcadores respaldados." },
-  "cancelButton": { "message": "Cancelar" },
-  "cancellingAiJob": { "message": "Cancelando tarea de IA…" },
-  "couldNotCancelAiJob": { "message": "No se pudo cancelar la tarea de IA." },
-  "aiJobCancelled": { "message": "Tarea de IA cancelada." },
-  "kindTabsLabel": { "message": "pestañas" },
-  "kindBookmarksLabel": { "message": "marcadores" },
-  "jobStateQueued": { "message": "Esperando a la IA · $1/$2 lotes" },
-  "jobStateProcessing": { "message": "Procesando con IA · $1/$2 lotes" },
-  "jobStateApplyingBookmarks": { "message": "Creando carpetas · $1/$2 marcadores" },
-  "jobStateApplyingTabs": { "message": "Organizando pestañas · $1/$2 pestañas" },
-  "jobStateCompletedBookmarks": { "message": "Completado · $1 carpetas" },
-  "jobStateCompletedTabs": { "message": "Completado · $1 grupos" },
-  "jobStateFailed": { "message": "Falló" },
-  "jobStateCancelled": { "message": "Cancelado" },
-  "errorGeneric": { "message": "Organizer no pudo completar esta acción." },
-  "errorBackgroundRestarted": { "message": "El proceso en segundo plano de Organizer se reinició. Vuelve a abrir la ventana para ver la tarea de IA guardada y su progreso más reciente." },
-  "errorBackgroundUnavailable": { "message": "El proceso en segundo plano de Organizer no está disponible. Vuelve a abrir la ventana; si esto continúa, recarga la extensión e inténtalo de nuevo." },
-  "errorAiTimeoutFriendly": { "message": "El servicio de IA está tardando más de lo esperado. No se modificaron pestañas ni marcadores, y se cancelaron los lotes de IA pendientes. Inténtalo de nuevo más tarde." },
-  "errorNetworkUnreachable": { "message": "Organizer no pudo conectarse al servicio de IA. Verifica tu conexión e inténtalo de nuevo; no se modificaron pestañas ni marcadores." },
-  "errorBackgroundGone": { "message": "El proceso en segundo plano de la extensión no respondió. Recarga la extensión e inténtalo de nuevo." },
-  "errorAiJobFailed": { "message": "No se pudo completar la tarea de IA." },
-
-  "optionsTitle": { "message": "Configuración de Organizer" },
-  "optionsHeading": { "message": "Configuración de Organizer" },
-  "optionsLead": { "message": "Elige cómo se categorizan las pestañas y los marcadores." },
-  "methodLabel": { "message": "Método de organización" },
-  "methodAi": { "message": "Categorías con IA (predeterminado)" },
-  "methodBuiltin": { "message": "Categorías integradas (privado, sin conexión)" },
-  "bookmarkScopeLabel": { "message": "Organizar solo los marcadores que no están ya en una carpeta" },
-  "bookmarkScopeNote": { "message": "Recomendado. Deja intactas tus carpetas de marcadores existentes y solo categoriza los marcadores sueltos. Desactívalo para reorganizar toda tu biblioteca de marcadores." },
-  "tabFallbackLabel": { "message": "Cuando los grupos de pestañas no están disponibles" },
-  "tabFallbackReorder": { "message": "Reordenar pestañas en la ventana actual (predeterminado)" },
-  "tabFallbackWindows": { "message": "Abrir una ventana por categoría" },
-  "tabFallbackNote": { "message": "Chrome usa grupos de pestañas nativos cuando están disponibles. Esta alternativa se usa en Firefox y otros navegadores sin soporte para grupos de pestañas." },
-  "closeDuplicateTabsLabel": { "message": "Cerrar pestañas repetidas" },
-  "closeDuplicateTabsNote": { "message": "Conserva la primera pestaña de cada URL idéntica. Se crea una copia de seguridad de la sesión antes de cerrar los duplicados." },
-  "removeDuplicateBookmarksLabel": { "message": "Eliminar marcadores repetidos" },
-  "removeDuplicateBookmarksNote": { "message": "Conserva el primer marcador de cada URL idéntica. Se crea una copia de seguridad antes de eliminar los duplicados." },
-  "providerLabel": { "message": "Proveedor de IA" },
-  "providerDave": { "message": "Dave AI (predeterminado, sin clave)" },
-  "providerOpenai": { "message": "OpenAI" },
-  "providerAnthropic": { "message": "Anthropic Claude" },
-  "providerGemini": { "message": "Google Gemini" },
-  "apiKeyLabel": { "message": "Clave de API" },
-  "apiKeyPlaceholder": { "message": "Se guarda localmente en este navegador" },
-  "modelLabel": { "message": "Modelo personalizado (opcional)" },
-  "modelPlaceholder": { "message": "Usa el modelo predeterminado del proveedor" },
-  "aiNotice": { "message": "Con la organización por IA, los títulos y URL de pestañas o marcadores se envían al proveedor seleccionado. Las claves de API permanecen en el almacenamiento local de la extensión y solo se envían a ese proveedor. Dave AI recibe datos de enlaces acotados y nunca acepta instrucciones (prompts) arbitrarias." },
-  "saveSettingsButton": { "message": "Guardar configuración" },
-  "savedStatus": { "message": "Guardado." },
-  "aiAccessNotGranted": { "message": "No se concedió acceso a la IA; no se cambió la configuración." },
-  "builtinCategoriesHeading": { "message": "Categorías integradas" },
-  "builtinCategoriesNotice": { "message": "El reconocimiento sin conexión incluye 10.000 dominios populares, además de títulos, metadatos y palabras clave del dominio." },
-  "aboutHeading": { "message": "Acerca de Organizer" },
-  "aboutNotice": { "message": "Conoce más sobre Organizer, su diseño centrado en la privacidad y cómo las donaciones ayudan a mantener nuestros servidores de IA opcionales." },
-  "aboutLink": { "message": "Visitar el sitio de Organizer →" },
-
-  "categoryWorkProductivity": { "message": "Trabajo y productividad" },
-  "categoryDevelopment": { "message": "Desarrollo" },
-  "categoryCommunication": { "message": "Comunicación" },
-  "categorySocial": { "message": "Redes sociales" },
-  "categoryNewsReading": { "message": "Noticias y lectura" },
-  "categoryVideoMusic": { "message": "Video y música" },
-  "categoryShopping": { "message": "Compras" },
-  "categoryFinance": { "message": "Finanzas" },
-  "categoryTravelMaps": { "message": "Viajes y mapas" },
-  "categoryEducation": { "message": "Educación" },
-  "categoryScienceReference": { "message": "Ciencia y referencia" },
-  "categoryHealthFitness": { "message": "Salud y estado físico" },
-  "categorySports": { "message": "Deportes" },
-  "categoryGaming": { "message": "Videojuegos" },
-  "categoryGovernment": { "message": "Gobierno y servicios públicos" },
-  "categoryFood": { "message": "Comida y recetas" },
-  "categoryRealEstate": { "message": "Hogar e inmuebles" },
-  "categoryAiTools": { "message": "Herramientas de IA" },
-
-  "bgNoRestorableTabs": { "message": "No hay pestañas restaurables en esta ventana." },
-  "bgTabsSessionPrefix": { "message": "Pestañas" },
-  "bgBookmarksBackupPrefix": { "message": "Marcadores" },
-  "bgBackupNotFound": { "message": "No se encontró la copia de seguridad." },
-  "bgInvalidBackupFile": { "message": "Archivo de copia de seguridad no válido." },
-  "bgUnknownAction": { "message": "Acción desconocida." },
-  "bgJobAlreadyRunning": { "message": "Ya hay una tarea de organización con IA en curso." },
-  "bgAiInvalidResponse": { "message": "La IA devolvió una respuesta no válida." },
-  "bgProviderReturned": { "message": "Dave AI devolvió $1." },
-  "bgVendorReturned": { "message": "El proveedor de IA devolvió $1." },
-  "bgAiTimedOut": { "message": "La solicitud de IA superó el tiempo de espera antes de que terminaran todos los lotes." },
-  "bgNoBookmarksToOrganize": { "message": "No hay marcadores para organizar." },
-  "bgNoBookmarkRoots": { "message": "No se encontraron ubicaciones de marcadores donde restaurar." },
-  "bgAddApiKey": { "message": "Agrega tu clave de API de $1 en Configuración." },
-  "bgBookmarksSkipped": { "message": "$1 marcadores ya no existían y se omitieron." },
-  "bgTabsSkipped": { "message": "$1 pestañas ya no existían y se omitieron." },
-  "bgCancelledByYou": { "message": "Cancelado por ti." },
-  "bgJobNotFound": { "message": "No se encontró la tarea de IA." },
-  "bgApplyFailed": { "message": "La IA terminó, pero Organizer no pudo aplicar los resultados: $1" },
-  "bgDaveCouldNotOrganize": { "message": "Dave AI no pudo organizar estos elementos." },
-  "bgImportedFolderTitle": { "message": "Importado" },
-  "bgOrganizerFolderPrefix": { "message": "Organizer" }
+  "extDescription": {
+    "message": "Haz copias de seguridad, restaura, importa, exporta y organiza pestañas y marcadores."
+  },
+  "popupTitle": {
+    "message": "Organizer"
+  },
+  "popupSubtitle": {
+    "message": "Pestañas y marcadores, respaldados de forma segura."
+  },
+  "settingsButtonTitle": {
+    "message": "Configuración"
+  },
+  "organizeTabsButton": {
+    "message": "Organizar pestañas"
+  },
+  "organizeBookmarksButton": {
+    "message": "Organizar marcadores"
+  },
+  "saveCloseButton": {
+    "message": "Guardar como sesión y cerrar"
+  },
+  "saveTabsButton": {
+    "message": "Respaldar pestañas"
+  },
+  "saveBookmarksButton": {
+    "message": "Respaldar marcadores"
+  },
+  "aiProcessingHeading": {
+    "message": "Procesamiento con IA"
+  },
+  "tabSessionsHeading": {
+    "message": "Sesiones de pestañas"
+  },
+  "bookmarkBackupsHeading": {
+    "message": "Copias de marcadores"
+  },
+  "exportButton": {
+    "message": "Exportar"
+  },
+  "importButton": {
+    "message": "Importar"
+  },
+  "noSessionsYet": {
+    "message": "Aún no hay sesiones guardadas."
+  },
+  "noBackupsYet": {
+    "message": "Aún no hay copias de marcadores."
+  },
+  "restoreButton": {
+    "message": "Restaurar"
+  },
+  "deleteButton": {
+    "message": "Eliminar"
+  },
+  "confirmDeleteBackup": {
+    "message": "¿Eliminar esta copia de seguridad?"
+  },
+  "backupDeleted": {
+    "message": "Copia de seguridad eliminada."
+  },
+  "backupRestored": {
+    "message": "Copia de seguridad restaurada."
+  },
+  "backupImported": {
+    "message": "Copia de seguridad importada."
+  },
+  "incompatibleBackupFile": {
+    "message": "Este archivo no es una copia de seguridad compatible con Organizer."
+  },
+  "itemsCount": {
+    "message": "$1 elementos"
+  },
+  "statusWorking": {
+    "message": "Procesando…"
+  },
+  "statusDone": {
+    "message": "Listo."
+  },
+  "preparingAiAccess": {
+    "message": "Preparando acceso a la IA…"
+  },
+  "aiAccessRequired": {
+    "message": "Se necesita acceso a la IA para el método de organización seleccionado. Puedes elegir el método sin conexión en Configuración."
+  },
+  "creatingBackupSendingAi": {
+    "message": "Creando una copia de seguridad y enviando enlaces a la IA…"
+  },
+  "aiProcessingTicker": {
+    "message": "La IA está procesando… $1s. Puedes mantener esta ventana abierta."
+  },
+  "aiProcessingStarted": {
+    "message": "Se inició el procesamiento con IA para $1 $2. Puedes cerrar esta ventana; Organizer continuará en segundo plano."
+  },
+  "tabsOrganizedSuccess": {
+    "message": "Pestañas organizadas; primero se guardó una copia de seguridad."
+  },
+  "bookmarksOrganizedSuccess": {
+    "message": "Marcadores organizados; primero se guardó una copia de seguridad."
+  },
+  "sessionSavedClosed": {
+    "message": "Sesión guardada; ventana cerrada."
+  },
+  "tabsBackedUp": {
+    "message": "Pestañas respaldadas."
+  },
+  "bookmarksBackedUp": {
+    "message": "Marcadores respaldados."
+  },
+  "cancelButton": {
+    "message": "Cancelar"
+  },
+  "cancellingAiJob": {
+    "message": "Cancelando tarea de IA…"
+  },
+  "couldNotCancelAiJob": {
+    "message": "No se pudo cancelar la tarea de IA."
+  },
+  "aiJobCancelled": {
+    "message": "Tarea de IA cancelada."
+  },
+  "kindTabsLabel": {
+    "message": "pestañas"
+  },
+  "kindBookmarksLabel": {
+    "message": "marcadores"
+  },
+  "jobStateQueued": {
+    "message": "Esperando a la IA · $1/$2 lotes"
+  },
+  "jobStateProcessing": {
+    "message": "Procesando con IA · $1/$2 lotes"
+  },
+  "jobStateApplyingBookmarks": {
+    "message": "Creando carpetas · $1/$2 marcadores"
+  },
+  "jobStateApplyingTabs": {
+    "message": "Organizando pestañas · $1/$2 pestañas"
+  },
+  "jobStateCompletedBookmarks": {
+    "message": "Completado · $1 carpetas"
+  },
+  "jobStateCompletedTabs": {
+    "message": "Completado · $1 grupos"
+  },
+  "jobStateFailed": {
+    "message": "Falló"
+  },
+  "jobStateCancelled": {
+    "message": "Cancelado"
+  },
+  "errorGeneric": {
+    "message": "Organizer no pudo completar esta acción."
+  },
+  "errorBackgroundRestarted": {
+    "message": "El proceso en segundo plano de Organizer se reinició. Vuelve a abrir la ventana para ver la tarea de IA guardada y su progreso más reciente."
+  },
+  "errorBackgroundUnavailable": {
+    "message": "El proceso en segundo plano de Organizer no está disponible. Vuelve a abrir la ventana; si esto continúa, recarga la extensión e inténtalo de nuevo."
+  },
+  "errorAiTimeoutFriendly": {
+    "message": "El servicio de IA está tardando más de lo esperado. No se modificaron pestañas ni marcadores, y se cancelaron los lotes de IA pendientes. Inténtalo de nuevo más tarde."
+  },
+  "errorNetworkUnreachable": {
+    "message": "Organizer no pudo conectarse al servicio de IA. Verifica tu conexión e inténtalo de nuevo; no se modificaron pestañas ni marcadores."
+  },
+  "errorBackgroundGone": {
+    "message": "El proceso en segundo plano de la extensión no respondió. Recarga la extensión e inténtalo de nuevo."
+  },
+  "errorAiJobFailed": {
+    "message": "No se pudo completar la tarea de IA."
+  },
+  "optionsTitle": {
+    "message": "Configuración de Organizer"
+  },
+  "optionsHeading": {
+    "message": "Configuración de Organizer"
+  },
+  "optionsLead": {
+    "message": "Elige cómo se categorizan las pestañas y los marcadores."
+  },
+  "methodLabel": {
+    "message": "Método de organización"
+  },
+  "methodAi": {
+    "message": "Categorías con IA (predeterminado)"
+  },
+  "methodBuiltin": {
+    "message": "Categorías integradas (privado, sin conexión)"
+  },
+  "bookmarkScopeLabel": {
+    "message": "Organizar solo los elementos del nivel superior"
+  },
+  "bookmarkScopeNote": {
+    "message": "Recomendado. Los marcadores sueltos y las carpetas que están directamente en la barra o en Otros marcadores se agrupan en nuevas carpetas de categoría, y el contenido de cada carpeta permanece junto. Los marcadores que ya están dentro de otra carpeta no se tocan. Desactívalo para recategorizar toda tu biblioteca de marcadores."
+  },
+  "tabFallbackLabel": {
+    "message": "Cuando los grupos de pestañas no están disponibles"
+  },
+  "tabFallbackReorder": {
+    "message": "Reordenar pestañas en la ventana actual (predeterminado)"
+  },
+  "tabFallbackWindows": {
+    "message": "Abrir una ventana por categoría"
+  },
+  "tabFallbackNote": {
+    "message": "Chrome usa grupos de pestañas nativos cuando están disponibles. Esta alternativa se usa en Firefox y otros navegadores sin soporte para grupos de pestañas."
+  },
+  "closeDuplicateTabsLabel": {
+    "message": "Cerrar pestañas repetidas"
+  },
+  "closeDuplicateTabsNote": {
+    "message": "Conserva la primera pestaña de cada URL idéntica. Se crea una copia de seguridad de la sesión antes de cerrar los duplicados."
+  },
+  "removeDuplicateBookmarksLabel": {
+    "message": "Eliminar marcadores repetidos"
+  },
+  "removeDuplicateBookmarksNote": {
+    "message": "Conserva el primer marcador de cada URL idéntica. Se crea una copia de seguridad antes de eliminar los duplicados."
+  },
+  "providerLabel": {
+    "message": "Proveedor de IA"
+  },
+  "providerDave": {
+    "message": "Dave AI (predeterminado, sin clave)"
+  },
+  "providerOpenai": {
+    "message": "OpenAI"
+  },
+  "providerAnthropic": {
+    "message": "Anthropic Claude"
+  },
+  "providerGemini": {
+    "message": "Google Gemini"
+  },
+  "apiKeyLabel": {
+    "message": "Clave de API"
+  },
+  "apiKeyPlaceholder": {
+    "message": "Se guarda localmente en este navegador"
+  },
+  "modelLabel": {
+    "message": "Modelo personalizado (opcional)"
+  },
+  "modelPlaceholder": {
+    "message": "Usa el modelo predeterminado del proveedor"
+  },
+  "aiNotice": {
+    "message": "Con la organización por IA, los títulos y URL de pestañas o marcadores se envían al proveedor seleccionado. Las claves de API permanecen en el almacenamiento local de la extensión y solo se envían a ese proveedor. Dave AI recibe datos de enlaces acotados y nunca acepta instrucciones (prompts) arbitrarias."
+  },
+  "saveSettingsButton": {
+    "message": "Guardar configuración"
+  },
+  "savedStatus": {
+    "message": "Guardado."
+  },
+  "aiAccessNotGranted": {
+    "message": "No se concedió acceso a la IA; no se cambió la configuración."
+  },
+  "builtinCategoriesHeading": {
+    "message": "Categorías integradas"
+  },
+  "builtinCategoriesNotice": {
+    "message": "El reconocimiento sin conexión incluye 10.000 dominios populares, además de títulos, metadatos y palabras clave del dominio."
+  },
+  "aboutHeading": {
+    "message": "Acerca de Organizer"
+  },
+  "aboutNotice": {
+    "message": "Conoce más sobre Organizer, su diseño centrado en la privacidad y cómo las donaciones ayudan a mantener nuestros servidores de IA opcionales."
+  },
+  "aboutLink": {
+    "message": "Visitar el sitio de Organizer →"
+  },
+  "categoryWorkProductivity": {
+    "message": "Trabajo y productividad"
+  },
+  "categoryDevelopment": {
+    "message": "Desarrollo"
+  },
+  "categoryCommunication": {
+    "message": "Comunicación"
+  },
+  "categorySocial": {
+    "message": "Redes sociales"
+  },
+  "categoryNewsReading": {
+    "message": "Noticias y lectura"
+  },
+  "categoryVideoMusic": {
+    "message": "Video y música"
+  },
+  "categoryShopping": {
+    "message": "Compras"
+  },
+  "categoryFinance": {
+    "message": "Finanzas"
+  },
+  "categoryTravelMaps": {
+    "message": "Viajes y mapas"
+  },
+  "categoryEducation": {
+    "message": "Educación"
+  },
+  "categoryScienceReference": {
+    "message": "Ciencia y referencia"
+  },
+  "categoryHealthFitness": {
+    "message": "Salud y estado físico"
+  },
+  "categorySports": {
+    "message": "Deportes"
+  },
+  "categoryGaming": {
+    "message": "Videojuegos"
+  },
+  "categoryGovernment": {
+    "message": "Gobierno y servicios públicos"
+  },
+  "categoryFood": {
+    "message": "Comida y recetas"
+  },
+  "categoryRealEstate": {
+    "message": "Hogar e inmuebles"
+  },
+  "categoryAiTools": {
+    "message": "Herramientas de IA"
+  },
+  "bgNoRestorableTabs": {
+    "message": "No hay pestañas restaurables en esta ventana."
+  },
+  "bgTabsSessionPrefix": {
+    "message": "Pestañas"
+  },
+  "bgBookmarksBackupPrefix": {
+    "message": "Marcadores"
+  },
+  "bgBackupNotFound": {
+    "message": "No se encontró la copia de seguridad."
+  },
+  "bgInvalidBackupFile": {
+    "message": "Archivo de copia de seguridad no válido."
+  },
+  "bgUnknownAction": {
+    "message": "Acción desconocida."
+  },
+  "bgJobAlreadyRunning": {
+    "message": "Ya hay una tarea de organización con IA en curso."
+  },
+  "bgAiInvalidResponse": {
+    "message": "La IA devolvió una respuesta no válida."
+  },
+  "bgProviderReturned": {
+    "message": "Dave AI devolvió $1."
+  },
+  "bgVendorReturned": {
+    "message": "El proveedor de IA devolvió $1."
+  },
+  "bgAiTimedOut": {
+    "message": "La solicitud de IA superó el tiempo de espera antes de que terminaran todos los lotes."
+  },
+  "bgNoBookmarksToOrganize": {
+    "message": "No hay marcadores para organizar."
+  },
+  "bgNoBookmarkRoots": {
+    "message": "No se encontraron ubicaciones de marcadores donde restaurar."
+  },
+  "bgAddApiKey": {
+    "message": "Agrega tu clave de API de $1 en Configuración."
+  },
+  "bgBookmarksSkipped": {
+    "message": "$1 marcadores ya no existían y se omitieron."
+  },
+  "bgTabsSkipped": {
+    "message": "$1 pestañas ya no existían y se omitieron."
+  },
+  "bgCancelledByYou": {
+    "message": "Cancelado por ti."
+  },
+  "bgJobNotFound": {
+    "message": "No se encontró la tarea de IA."
+  },
+  "bgApplyFailed": {
+    "message": "La IA terminó, pero Organizer no pudo aplicar los resultados: $1"
+  },
+  "bgDaveCouldNotOrganize": {
+    "message": "Dave AI no pudo organizar estos elementos."
+  },
+  "bgImportedFolderTitle": {
+    "message": "Importado"
+  }
 }
