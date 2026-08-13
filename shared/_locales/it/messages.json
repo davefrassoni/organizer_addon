@@ -1,137 +1,392 @@
 {
-  "extDescription": { "message": "Esegui backup, ripristino, importazione, esportazione e organizzazione di schede e segnalibri." },
-
-  "popupTitle": { "message": "Organizer" },
-  "popupSubtitle": { "message": "Schede e segnalibri, salvati in sicurezza." },
-  "settingsButtonTitle": { "message": "Impostazioni" },
-  "organizeTabsButton": { "message": "Organizza schede" },
-  "organizeBookmarksButton": { "message": "Organizza segnalibri" },
-  "saveCloseButton": { "message": "Salva come sessione e chiudi" },
-  "saveTabsButton": { "message": "Backup delle schede" },
-  "saveBookmarksButton": { "message": "Backup dei segnalibri" },
-  "aiProcessingHeading": { "message": "Elaborazione IA" },
-  "tabSessionsHeading": { "message": "Sessioni di schede" },
-  "bookmarkBackupsHeading": { "message": "Backup dei segnalibri" },
-  "exportButton": { "message": "Esporta" },
-  "importButton": { "message": "Importa" },
-  "noSessionsYet": { "message": "Nessuna sessione salvata finora." },
-  "noBackupsYet": { "message": "Nessun backup di segnalibri finora." },
-  "restoreButton": { "message": "Ripristina" },
-  "deleteButton": { "message": "Elimina" },
-  "confirmDeleteBackup": { "message": "Eliminare questo backup?" },
-  "backupDeleted": { "message": "Backup eliminato." },
-  "backupRestored": { "message": "Backup ripristinato." },
-  "backupImported": { "message": "Backup importato." },
-  "incompatibleBackupFile": { "message": "Questo file non è un backup di Organizer compatibile." },
-  "itemsCount": { "message": "$1 elementi" },
-  "statusWorking": { "message": "Elaborazione in corso…" },
-  "statusDone": { "message": "Fatto." },
-  "preparingAiAccess": { "message": "Preparazione dell'accesso all'IA…" },
-  "aiAccessRequired": { "message": "Per il metodo di organizzazione selezionato è necessario l'accesso all'IA. Puoi scegliere il metodo offline nelle Impostazioni." },
-  "creatingBackupSendingAi": { "message": "Creazione di un backup di sicurezza e invio dei link all'IA…" },
-  "aiProcessingTicker": { "message": "L'IA sta elaborando… $1s. Puoi lasciare questa finestra aperta." },
-  "aiProcessingStarted": { "message": "Elaborazione IA avviata per $1 $2. Puoi chiudere questa finestra; Organizer continuerà in background." },
-  "tabsOrganizedSuccess": { "message": "Schede organizzate; è stato prima salvato un backup." },
-  "bookmarksOrganizedSuccess": { "message": "Segnalibri organizzati; è stato prima salvato un backup." },
-  "sessionSavedClosed": { "message": "Sessione salvata; finestra chiusa." },
-  "tabsBackedUp": { "message": "Backup delle schede eseguito." },
-  "bookmarksBackedUp": { "message": "Backup dei segnalibri eseguito." },
-  "cancelButton": { "message": "Annulla" },
-  "cancellingAiJob": { "message": "Annullamento dell'attività IA…" },
-  "couldNotCancelAiJob": { "message": "Impossibile annullare l'attività IA." },
-  "aiJobCancelled": { "message": "Attività IA annullata." },
-  "kindTabsLabel": { "message": "schede" },
-  "kindBookmarksLabel": { "message": "segnalibri" },
-  "jobStateQueued": { "message": "In attesa dell'IA · $1/$2 lotti" },
-  "jobStateProcessing": { "message": "Elaborazione IA · $1/$2 lotti" },
-  "jobStateApplyingBookmarks": { "message": "Creazione cartelle · $1/$2 segnalibri" },
-  "jobStateApplyingTabs": { "message": "Organizzazione schede · $1/$2 schede" },
-  "jobStateCompletedBookmarks": { "message": "Completato · $1 cartelle" },
-  "jobStateCompletedTabs": { "message": "Completato · $1 gruppi" },
-  "jobStateFailed": { "message": "Non riuscito" },
-  "jobStateCancelled": { "message": "Annullato" },
-  "errorGeneric": { "message": "Organizer non è riuscito a completare questa azione." },
-  "errorBackgroundRestarted": { "message": "Il processo in background di Organizer è stato riavviato. Riapri la finestra per vedere l'attività IA salvata e il suo avanzamento più recente." },
-  "errorBackgroundUnavailable": { "message": "Il processo in background di Organizer non è disponibile. Riapri la finestra; se il problema persiste, ricarica l'estensione e riprova." },
-  "errorAiTimeoutFriendly": { "message": "Il servizio IA sta impiegando più tempo del previsto. Nessuna scheda o segnalibro è stato modificato e i lotti IA rimanenti sono stati annullati. Riprova più tardi." },
-  "errorNetworkUnreachable": { "message": "Organizer non è riuscito a raggiungere il servizio IA. Controlla la connessione e riprova; nessuna scheda o segnalibro è stato modificato." },
-  "errorBackgroundGone": { "message": "Il processo in background dell'estensione non ha risposto. Ricarica l'estensione e riprova." },
-  "errorAiJobFailed": { "message": "Non è stato possibile completare l'attività IA." },
-
-  "optionsTitle": { "message": "Impostazioni di Organizer" },
-  "optionsHeading": { "message": "Impostazioni di Organizer" },
-  "optionsLead": { "message": "Scegli come vengono categorizzati schede e segnalibri." },
-  "methodLabel": { "message": "Metodo di organizzazione" },
-  "methodAi": { "message": "Categorie IA (predefinito)" },
-  "methodBuiltin": { "message": "Categorie integrate (privato, offline)" },
-  "bookmarkScopeLabel": { "message": "Organizza solo i segnalibri non già presenti in una cartella" },
-  "bookmarkScopeNote": { "message": "Consigliato. Lascia intatte le cartelle di segnalibri esistenti e categorizza solo i segnalibri sparsi. Disattiva questa opzione per riorganizzare l'intera raccolta di segnalibri." },
-  "tabFallbackLabel": { "message": "Quando i gruppi di schede non sono disponibili" },
-  "tabFallbackReorder": { "message": "Riordina le schede nella finestra corrente (predefinito)" },
-  "tabFallbackWindows": { "message": "Apri una finestra per categoria" },
-  "tabFallbackNote": { "message": "Chrome usa i gruppi di schede nativi quando disponibili. Questa alternativa viene usata da Firefox e da altri browser senza supporto ai gruppi di schede." },
-  "closeDuplicateTabsLabel": { "message": "Chiudi le schede ripetute" },
-  "closeDuplicateTabsNote": { "message": "Mantiene la prima scheda per ogni URL identico. Un backup della sessione viene creato prima di chiudere i duplicati." },
-  "removeDuplicateBookmarksLabel": { "message": "Rimuovi i segnalibri ripetuti" },
-  "removeDuplicateBookmarksNote": { "message": "Mantiene il primo segnalibro per ogni URL identico. Un backup viene creato prima di rimuovere i duplicati." },
-  "providerLabel": { "message": "Provider IA" },
-  "providerDave": { "message": "Dave AI (predefinito, senza chiave)" },
-  "providerOpenai": { "message": "OpenAI" },
-  "providerAnthropic": { "message": "Anthropic Claude" },
-  "providerGemini": { "message": "Google Gemini" },
-  "apiKeyLabel": { "message": "Chiave API" },
-  "apiKeyPlaceholder": { "message": "Salvata localmente in questo browser" },
-  "modelLabel": { "message": "Modello personalizzato (opzionale)" },
-  "modelPlaceholder": { "message": "Usa il modello predefinito del provider" },
-  "aiNotice": { "message": "Con l'organizzazione tramite IA, i titoli e gli URL di schede o segnalibri vengono inviati al provider selezionato. Le chiavi API restano nell'archivio locale dell'estensione e vengono inviate solo a quel provider. Dave AI riceve dati sui link limitati e non accetta mai istruzioni (prompt) arbitrarie." },
-  "saveSettingsButton": { "message": "Salva impostazioni" },
-  "savedStatus": { "message": "Salvato." },
-  "aiAccessNotGranted": { "message": "L'accesso all'IA non è stato concesso; le impostazioni non sono state modificate." },
-  "builtinCategoriesHeading": { "message": "Categorie integrate" },
-  "builtinCategoriesNotice": { "message": "Il riconoscimento offline include 10.000 domini popolari, oltre a titoli, metadati e parole chiave di dominio." },
-  "aboutHeading": { "message": "Informazioni su Organizer" },
-  "aboutNotice": { "message": "Scopri di più su Organizer, sul suo design incentrato sulla privacy e su come le donazioni aiutano a mantenere i nostri server IA opzionali." },
-  "aboutLink": { "message": "Visita il sito di Organizer →" },
-
-  "categoryWorkProductivity": { "message": "Lavoro e produttività" },
-  "categoryDevelopment": { "message": "Sviluppo" },
-  "categoryCommunication": { "message": "Comunicazione" },
-  "categorySocial": { "message": "Social" },
-  "categoryNewsReading": { "message": "Notizie e lettura" },
-  "categoryVideoMusic": { "message": "Video e musica" },
-  "categoryShopping": { "message": "Shopping" },
-  "categoryFinance": { "message": "Finanza" },
-  "categoryTravelMaps": { "message": "Viaggi e mappe" },
-  "categoryEducation": { "message": "Istruzione" },
-  "categoryScienceReference": { "message": "Scienza e consultazione" },
-  "categoryHealthFitness": { "message": "Salute e fitness" },
-  "categorySports": { "message": "Sport" },
-  "categoryGaming": { "message": "Videogiochi" },
-  "categoryGovernment": { "message": "Pubblica amministrazione e servizi" },
-  "categoryFood": { "message": "Cibo e ricette" },
-  "categoryRealEstate": { "message": "Casa e immobili" },
-  "categoryAiTools": { "message": "Strumenti IA" },
-
-  "bgNoRestorableTabs": { "message": "In questa finestra non ci sono schede ripristinabili." },
-  "bgTabsSessionPrefix": { "message": "Schede" },
-  "bgBookmarksBackupPrefix": { "message": "Segnalibri" },
-  "bgBackupNotFound": { "message": "Backup non trovato." },
-  "bgInvalidBackupFile": { "message": "File di backup non valido." },
-  "bgUnknownAction": { "message": "Azione sconosciuta." },
-  "bgJobAlreadyRunning": { "message": "È già in corso un'attività di organizzazione IA." },
-  "bgAiInvalidResponse": { "message": "L'IA ha restituito una risposta non valida." },
-  "bgProviderReturned": { "message": "Dave AI ha restituito $1." },
-  "bgVendorReturned": { "message": "Il provider IA ha restituito $1." },
-  "bgAiTimedOut": { "message": "La richiesta all'IA ha superato il tempo massimo prima che tutti i lotti di elaborazione finissero." },
-  "bgNoBookmarksToOrganize": { "message": "Nessun segnalibro da organizzare." },
-  "bgNoBookmarkRoots": { "message": "Non è stata trovata alcuna posizione di segnalibri in cui ripristinare." },
-  "bgAddApiKey": { "message": "Aggiungi la tua chiave API $1 nelle Impostazioni." },
-  "bgBookmarksSkipped": { "message": "$1 segnalibri non esistevano più e sono stati saltati." },
-  "bgTabsSkipped": { "message": "$1 schede non esistevano più e sono state saltate." },
-  "bgCancelledByYou": { "message": "Annullato da te." },
-  "bgJobNotFound": { "message": "Attività IA non trovata." },
-  "bgApplyFailed": { "message": "L'IA ha terminato, ma Organizer non è riuscito ad applicare i risultati: $1" },
-  "bgDaveCouldNotOrganize": { "message": "Dave AI non è riuscito a organizzare questi elementi." },
-  "bgImportedFolderTitle": { "message": "Importato" },
-  "bgOrganizerFolderPrefix": { "message": "Organizer" }
+  "extDescription": {
+    "message": "Esegui backup, ripristino, importazione, esportazione e organizzazione di schede e segnalibri."
+  },
+  "popupTitle": {
+    "message": "Organizer"
+  },
+  "popupSubtitle": {
+    "message": "Schede e segnalibri, salvati in sicurezza."
+  },
+  "settingsButtonTitle": {
+    "message": "Impostazioni"
+  },
+  "organizeTabsButton": {
+    "message": "Organizza schede"
+  },
+  "organizeBookmarksButton": {
+    "message": "Organizza segnalibri"
+  },
+  "saveCloseButton": {
+    "message": "Salva come sessione e chiudi"
+  },
+  "saveTabsButton": {
+    "message": "Backup delle schede"
+  },
+  "saveBookmarksButton": {
+    "message": "Backup dei segnalibri"
+  },
+  "aiProcessingHeading": {
+    "message": "Elaborazione IA"
+  },
+  "tabSessionsHeading": {
+    "message": "Sessioni di schede"
+  },
+  "bookmarkBackupsHeading": {
+    "message": "Backup dei segnalibri"
+  },
+  "exportButton": {
+    "message": "Esporta"
+  },
+  "importButton": {
+    "message": "Importa"
+  },
+  "noSessionsYet": {
+    "message": "Nessuna sessione salvata finora."
+  },
+  "noBackupsYet": {
+    "message": "Nessun backup di segnalibri finora."
+  },
+  "restoreButton": {
+    "message": "Ripristina"
+  },
+  "deleteButton": {
+    "message": "Elimina"
+  },
+  "confirmDeleteBackup": {
+    "message": "Eliminare questo backup?"
+  },
+  "backupDeleted": {
+    "message": "Backup eliminato."
+  },
+  "backupRestored": {
+    "message": "Backup ripristinato."
+  },
+  "backupImported": {
+    "message": "Backup importato."
+  },
+  "incompatibleBackupFile": {
+    "message": "Questo file non è un backup di Organizer compatibile."
+  },
+  "itemsCount": {
+    "message": "$1 elementi"
+  },
+  "statusWorking": {
+    "message": "Elaborazione in corso…"
+  },
+  "statusDone": {
+    "message": "Fatto."
+  },
+  "preparingAiAccess": {
+    "message": "Preparazione dell'accesso all'IA…"
+  },
+  "aiAccessRequired": {
+    "message": "Per il metodo di organizzazione selezionato è necessario l'accesso all'IA. Puoi scegliere il metodo offline nelle Impostazioni."
+  },
+  "creatingBackupSendingAi": {
+    "message": "Creazione di un backup di sicurezza e invio dei link all'IA…"
+  },
+  "aiProcessingTicker": {
+    "message": "L'IA sta elaborando… $1s. Puoi lasciare questa finestra aperta."
+  },
+  "aiProcessingStarted": {
+    "message": "Elaborazione IA avviata per $1 $2. Puoi chiudere questa finestra; Organizer continuerà in background."
+  },
+  "tabsOrganizedSuccess": {
+    "message": "Schede organizzate; è stato prima salvato un backup."
+  },
+  "bookmarksOrganizedSuccess": {
+    "message": "Segnalibri organizzati; è stato prima salvato un backup."
+  },
+  "sessionSavedClosed": {
+    "message": "Sessione salvata; finestra chiusa."
+  },
+  "tabsBackedUp": {
+    "message": "Backup delle schede eseguito."
+  },
+  "bookmarksBackedUp": {
+    "message": "Backup dei segnalibri eseguito."
+  },
+  "cancelButton": {
+    "message": "Annulla"
+  },
+  "cancellingAiJob": {
+    "message": "Annullamento dell'attività IA…"
+  },
+  "couldNotCancelAiJob": {
+    "message": "Impossibile annullare l'attività IA."
+  },
+  "aiJobCancelled": {
+    "message": "Attività IA annullata."
+  },
+  "kindTabsLabel": {
+    "message": "schede"
+  },
+  "kindBookmarksLabel": {
+    "message": "segnalibri"
+  },
+  "jobStateQueued": {
+    "message": "In attesa dell'IA · $1/$2 lotti"
+  },
+  "jobStateProcessing": {
+    "message": "Elaborazione IA · $1/$2 lotti"
+  },
+  "jobStateApplyingBookmarks": {
+    "message": "Creazione cartelle · $1/$2 segnalibri"
+  },
+  "jobStateApplyingTabs": {
+    "message": "Organizzazione schede · $1/$2 schede"
+  },
+  "jobStateCompletedBookmarks": {
+    "message": "Completato · $1 cartelle"
+  },
+  "jobStateCompletedTabs": {
+    "message": "Completato · $1 gruppi"
+  },
+  "jobStateFailed": {
+    "message": "Non riuscito"
+  },
+  "jobStateCancelled": {
+    "message": "Annullato"
+  },
+  "errorGeneric": {
+    "message": "Organizer non è riuscito a completare questa azione."
+  },
+  "errorBackgroundRestarted": {
+    "message": "Il processo in background di Organizer è stato riavviato. Riapri la finestra per vedere l'attività IA salvata e il suo avanzamento più recente."
+  },
+  "errorBackgroundUnavailable": {
+    "message": "Il processo in background di Organizer non è disponibile. Riapri la finestra; se il problema persiste, ricarica l'estensione e riprova."
+  },
+  "errorAiTimeoutFriendly": {
+    "message": "Il servizio IA sta impiegando più tempo del previsto. Nessuna scheda o segnalibro è stato modificato e i lotti IA rimanenti sono stati annullati. Riprova più tardi."
+  },
+  "errorNetworkUnreachable": {
+    "message": "Organizer non è riuscito a raggiungere il servizio IA. Controlla la connessione e riprova; nessuna scheda o segnalibro è stato modificato."
+  },
+  "errorBackgroundGone": {
+    "message": "Il processo in background dell'estensione non ha risposto. Ricarica l'estensione e riprova."
+  },
+  "errorAiJobFailed": {
+    "message": "Non è stato possibile completare l'attività IA."
+  },
+  "optionsTitle": {
+    "message": "Impostazioni di Organizer"
+  },
+  "optionsHeading": {
+    "message": "Impostazioni di Organizer"
+  },
+  "optionsLead": {
+    "message": "Scegli come vengono categorizzati schede e segnalibri."
+  },
+  "methodLabel": {
+    "message": "Metodo di organizzazione"
+  },
+  "methodAi": {
+    "message": "Categorie IA (predefinito)"
+  },
+  "methodBuiltin": {
+    "message": "Categorie integrate (privato, offline)"
+  },
+  "bookmarkScopeLabel": {
+    "message": "Organizza solo gli elementi di primo livello"
+  },
+  "bookmarkScopeNote": {
+    "message": "Consigliato. I segnalibri sparsi e le cartelle presenti direttamente nella barra o in Altri Preferiti vengono raggruppati in nuove cartelle di categoria, mantenendo unito il contenuto di ciascuna cartella. I segnalibri già presenti in un'altra cartella non vengono toccati. Disattiva questa opzione per ricategorizzare l'intera raccolta di segnalibri."
+  },
+  "tabFallbackLabel": {
+    "message": "Quando i gruppi di schede non sono disponibili"
+  },
+  "tabFallbackReorder": {
+    "message": "Riordina le schede nella finestra corrente (predefinito)"
+  },
+  "tabFallbackWindows": {
+    "message": "Apri una finestra per categoria"
+  },
+  "tabFallbackNote": {
+    "message": "Chrome usa i gruppi di schede nativi quando disponibili. Questa alternativa viene usata da Firefox e da altri browser senza supporto ai gruppi di schede."
+  },
+  "closeDuplicateTabsLabel": {
+    "message": "Chiudi le schede ripetute"
+  },
+  "closeDuplicateTabsNote": {
+    "message": "Mantiene la prima scheda per ogni URL identico. Un backup della sessione viene creato prima di chiudere i duplicati."
+  },
+  "removeDuplicateBookmarksLabel": {
+    "message": "Rimuovi i segnalibri ripetuti"
+  },
+  "removeDuplicateBookmarksNote": {
+    "message": "Mantiene il primo segnalibro per ogni URL identico. Un backup viene creato prima di rimuovere i duplicati."
+  },
+  "providerLabel": {
+    "message": "Provider IA"
+  },
+  "providerDave": {
+    "message": "Dave AI (predefinito, senza chiave)"
+  },
+  "providerOpenai": {
+    "message": "OpenAI"
+  },
+  "providerAnthropic": {
+    "message": "Anthropic Claude"
+  },
+  "providerGemini": {
+    "message": "Google Gemini"
+  },
+  "apiKeyLabel": {
+    "message": "Chiave API"
+  },
+  "apiKeyPlaceholder": {
+    "message": "Salvata localmente in questo browser"
+  },
+  "modelLabel": {
+    "message": "Modello personalizzato (opzionale)"
+  },
+  "modelPlaceholder": {
+    "message": "Usa il modello predefinito del provider"
+  },
+  "aiNotice": {
+    "message": "Con l'organizzazione tramite IA, i titoli e gli URL di schede o segnalibri vengono inviati al provider selezionato. Le chiavi API restano nell'archivio locale dell'estensione e vengono inviate solo a quel provider. Dave AI riceve dati sui link limitati e non accetta mai istruzioni (prompt) arbitrarie."
+  },
+  "saveSettingsButton": {
+    "message": "Salva impostazioni"
+  },
+  "savedStatus": {
+    "message": "Salvato."
+  },
+  "aiAccessNotGranted": {
+    "message": "L'accesso all'IA non è stato concesso; le impostazioni non sono state modificate."
+  },
+  "builtinCategoriesHeading": {
+    "message": "Categorie integrate"
+  },
+  "builtinCategoriesNotice": {
+    "message": "Il riconoscimento offline include 10.000 domini popolari, oltre a titoli, metadati e parole chiave di dominio."
+  },
+  "aboutHeading": {
+    "message": "Informazioni su Organizer"
+  },
+  "aboutNotice": {
+    "message": "Scopri di più su Organizer, sul suo design incentrato sulla privacy e su come le donazioni aiutano a mantenere i nostri server IA opzionali."
+  },
+  "aboutLink": {
+    "message": "Visita il sito di Organizer →"
+  },
+  "categoryWorkProductivity": {
+    "message": "Lavoro e produttività"
+  },
+  "categoryDevelopment": {
+    "message": "Sviluppo"
+  },
+  "categoryCommunication": {
+    "message": "Comunicazione"
+  },
+  "categorySocial": {
+    "message": "Social"
+  },
+  "categoryNewsReading": {
+    "message": "Notizie e lettura"
+  },
+  "categoryVideoMusic": {
+    "message": "Video e musica"
+  },
+  "categoryShopping": {
+    "message": "Shopping"
+  },
+  "categoryFinance": {
+    "message": "Finanza"
+  },
+  "categoryTravelMaps": {
+    "message": "Viaggi e mappe"
+  },
+  "categoryEducation": {
+    "message": "Istruzione"
+  },
+  "categoryScienceReference": {
+    "message": "Scienza e consultazione"
+  },
+  "categoryHealthFitness": {
+    "message": "Salute e fitness"
+  },
+  "categorySports": {
+    "message": "Sport"
+  },
+  "categoryGaming": {
+    "message": "Videogiochi"
+  },
+  "categoryGovernment": {
+    "message": "Pubblica amministrazione e servizi"
+  },
+  "categoryFood": {
+    "message": "Cibo e ricette"
+  },
+  "categoryRealEstate": {
+    "message": "Casa e immobili"
+  },
+  "categoryAiTools": {
+    "message": "Strumenti IA"
+  },
+  "bgNoRestorableTabs": {
+    "message": "In questa finestra non ci sono schede ripristinabili."
+  },
+  "bgTabsSessionPrefix": {
+    "message": "Schede"
+  },
+  "bgBookmarksBackupPrefix": {
+    "message": "Segnalibri"
+  },
+  "bgBackupNotFound": {
+    "message": "Backup non trovato."
+  },
+  "bgInvalidBackupFile": {
+    "message": "File di backup non valido."
+  },
+  "bgUnknownAction": {
+    "message": "Azione sconosciuta."
+  },
+  "bgJobAlreadyRunning": {
+    "message": "È già in corso un'attività di organizzazione IA."
+  },
+  "bgAiInvalidResponse": {
+    "message": "L'IA ha restituito una risposta non valida."
+  },
+  "bgProviderReturned": {
+    "message": "Dave AI ha restituito $1."
+  },
+  "bgVendorReturned": {
+    "message": "Il provider IA ha restituito $1."
+  },
+  "bgAiTimedOut": {
+    "message": "La richiesta all'IA ha superato il tempo massimo prima che tutti i lotti di elaborazione finissero."
+  },
+  "bgNoBookmarksToOrganize": {
+    "message": "Nessun segnalibro da organizzare."
+  },
+  "bgNoBookmarkRoots": {
+    "message": "Non è stata trovata alcuna posizione di segnalibri in cui ripristinare."
+  },
+  "bgAddApiKey": {
+    "message": "Aggiungi la tua chiave API $1 nelle Impostazioni."
+  },
+  "bgBookmarksSkipped": {
+    "message": "$1 segnalibri non esistevano più e sono stati saltati."
+  },
+  "bgTabsSkipped": {
+    "message": "$1 schede non esistevano più e sono state saltate."
+  },
+  "bgCancelledByYou": {
+    "message": "Annullato da te."
+  },
+  "bgJobNotFound": {
+    "message": "Attività IA non trovata."
+  },
+  "bgApplyFailed": {
+    "message": "L'IA ha terminato, ma Organizer non è riuscito ad applicare i risultati: $1"
+  },
+  "bgDaveCouldNotOrganize": {
+    "message": "Dave AI non è riuscito a organizzare questi elementi."
+  },
+  "bgImportedFolderTitle": {
+    "message": "Importato"
+  }
 }

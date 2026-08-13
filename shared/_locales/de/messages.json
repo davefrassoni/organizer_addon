@@ -1,137 +1,392 @@
 {
-  "extDescription": { "message": "Sichere, stelle wieder her, importiere, exportiere und organisiere Tabs und Lesezeichen." },
-
-  "popupTitle": { "message": "Organizer" },
-  "popupSubtitle": { "message": "Tabs und Lesezeichen, sicher gesichert." },
-  "settingsButtonTitle": { "message": "Einstellungen" },
-  "organizeTabsButton": { "message": "Tabs organisieren" },
-  "organizeBookmarksButton": { "message": "Lesezeichen organisieren" },
-  "saveCloseButton": { "message": "Als Sitzung speichern & schließen" },
-  "saveTabsButton": { "message": "Tabs sichern" },
-  "saveBookmarksButton": { "message": "Lesezeichen sichern" },
-  "aiProcessingHeading": { "message": "KI-Verarbeitung" },
-  "tabSessionsHeading": { "message": "Tab-Sitzungen" },
-  "bookmarkBackupsHeading": { "message": "Lesezeichen-Sicherungen" },
-  "exportButton": { "message": "Exportieren" },
-  "importButton": { "message": "Importieren" },
-  "noSessionsYet": { "message": "Noch keine gespeicherten Sitzungen." },
-  "noBackupsYet": { "message": "Noch keine Lesezeichen-Sicherungen." },
-  "restoreButton": { "message": "Wiederherstellen" },
-  "deleteButton": { "message": "Löschen" },
-  "confirmDeleteBackup": { "message": "Diese Sicherung löschen?" },
-  "backupDeleted": { "message": "Sicherung gelöscht." },
-  "backupRestored": { "message": "Sicherung wiederhergestellt." },
-  "backupImported": { "message": "Sicherung importiert." },
-  "incompatibleBackupFile": { "message": "Diese Datei ist keine kompatible Organizer-Sicherung." },
-  "itemsCount": { "message": "$1 Einträge" },
-  "statusWorking": { "message": "Wird verarbeitet…" },
-  "statusDone": { "message": "Fertig." },
-  "preparingAiAccess": { "message": "KI-Zugriff wird vorbereitet…" },
-  "aiAccessRequired": { "message": "Für die gewählte Organisationsmethode ist KI-Zugriff erforderlich. In den Einstellungen kannst du stattdessen die Offline-Methode wählen." },
-  "creatingBackupSendingAi": { "message": "Sicherheitskopie wird erstellt und Links werden an die KI gesendet…" },
-  "aiProcessingTicker": { "message": "Die KI verarbeitet die Daten … $1 s. Du kannst dieses Fenster geöffnet lassen." },
-  "aiProcessingStarted": { "message": "KI-Verarbeitung für $1 $2 gestartet. Du kannst dieses Fenster schließen; Organizer läuft im Hintergrund weiter." },
-  "tabsOrganizedSuccess": { "message": "Tabs organisiert; zuvor wurde eine Sicherung erstellt." },
-  "bookmarksOrganizedSuccess": { "message": "Lesezeichen organisiert; zuvor wurde eine Sicherung erstellt." },
-  "sessionSavedClosed": { "message": "Sitzung gespeichert; Fenster geschlossen." },
-  "tabsBackedUp": { "message": "Tabs gesichert." },
-  "bookmarksBackedUp": { "message": "Lesezeichen gesichert." },
-  "cancelButton": { "message": "Abbrechen" },
-  "cancellingAiJob": { "message": "KI-Aufgabe wird abgebrochen…" },
-  "couldNotCancelAiJob": { "message": "Die KI-Aufgabe konnte nicht abgebrochen werden." },
-  "aiJobCancelled": { "message": "KI-Aufgabe abgebrochen." },
-  "kindTabsLabel": { "message": "Tabs" },
-  "kindBookmarksLabel": { "message": "Lesezeichen" },
-  "jobStateQueued": { "message": "Warten auf KI · $1/$2 Stapel" },
-  "jobStateProcessing": { "message": "KI-Verarbeitung · $1/$2 Stapel" },
-  "jobStateApplyingBookmarks": { "message": "Ordner werden erstellt · $1/$2 Lesezeichen" },
-  "jobStateApplyingTabs": { "message": "Tabs werden organisiert · $1/$2 Tabs" },
-  "jobStateCompletedBookmarks": { "message": "Abgeschlossen · $1 Ordner" },
-  "jobStateCompletedTabs": { "message": "Abgeschlossen · $1 Gruppen" },
-  "jobStateFailed": { "message": "Fehlgeschlagen" },
-  "jobStateCancelled": { "message": "Abgebrochen" },
-  "errorGeneric": { "message": "Organizer konnte diese Aktion nicht abschließen." },
-  "errorBackgroundRestarted": { "message": "Der Hintergrundprozess von Organizer wurde neu gestartet. Öffne das Fenster erneut, um die gespeicherte KI-Aufgabe und ihren aktuellen Fortschritt zu sehen." },
-  "errorBackgroundUnavailable": { "message": "Der Hintergrundprozess von Organizer ist nicht verfügbar. Öffne das Fenster erneut; falls das Problem weiterhin besteht, lade die Erweiterung neu und versuche es erneut." },
-  "errorAiTimeoutFriendly": { "message": "Der KI-Dienst braucht länger als erwartet. Es wurden keine Tabs oder Lesezeichen geändert, und verbleibende KI-Stapel wurden abgebrochen. Bitte versuche es später erneut." },
-  "errorNetworkUnreachable": { "message": "Organizer konnte den KI-Dienst nicht erreichen. Überprüfe deine Verbindung und versuche es erneut; es wurden keine Tabs oder Lesezeichen geändert." },
-  "errorBackgroundGone": { "message": "Der Hintergrundprozess der Erweiterung hat nicht reagiert. Lade die Erweiterung neu und versuche es erneut." },
-  "errorAiJobFailed": { "message": "Die KI-Aufgabe konnte nicht abgeschlossen werden." },
-
-  "optionsTitle": { "message": "Organizer-Einstellungen" },
-  "optionsHeading": { "message": "Organizer-Einstellungen" },
-  "optionsLead": { "message": "Lege fest, wie Tabs und Lesezeichen kategorisiert werden." },
-  "methodLabel": { "message": "Organisationsmethode" },
-  "methodAi": { "message": "KI-Kategorien (Standard)" },
-  "methodBuiltin": { "message": "Integrierte Kategorien (privat, offline)" },
-  "bookmarkScopeLabel": { "message": "Nur Lesezeichen organisieren, die noch in keinem Ordner sind" },
-  "bookmarkScopeNote": { "message": "Empfohlen. Lässt deine vorhandenen Lesezeichenordner unverändert und kategorisiert nur lose Lesezeichen. Deaktiviere dies, um deine gesamte Lesezeichensammlung neu zu organisieren." },
-  "tabFallbackLabel": { "message": "Wenn Tab-Gruppen nicht verfügbar sind" },
-  "tabFallbackReorder": { "message": "Tabs im aktuellen Fenster neu anordnen (Standard)" },
-  "tabFallbackWindows": { "message": "Ein Fenster pro Kategorie öffnen" },
-  "tabFallbackNote": { "message": "Chrome verwendet native Tab-Gruppen, wenn verfügbar. Diese Alternative wird von Firefox und anderen Browsern ohne Unterstützung für Tab-Gruppen verwendet." },
-  "closeDuplicateTabsLabel": { "message": "Wiederholte Tabs schließen" },
-  "closeDuplicateTabsNote": { "message": "Behält den ersten Tab für jede identische URL. Vor dem Schließen von Duplikaten wird eine Tab-Sitzungssicherung erstellt." },
-  "removeDuplicateBookmarksLabel": { "message": "Wiederholte Lesezeichen entfernen" },
-  "removeDuplicateBookmarksNote": { "message": "Behält das erste Lesezeichen für jede identische URL. Vor dem Entfernen von Duplikaten wird eine Sicherung erstellt." },
-  "providerLabel": { "message": "KI-Anbieter" },
-  "providerDave": { "message": "Dave AI (Standard, kein Schlüssel nötig)" },
-  "providerOpenai": { "message": "OpenAI" },
-  "providerAnthropic": { "message": "Anthropic Claude" },
-  "providerGemini": { "message": "Google Gemini" },
-  "apiKeyLabel": { "message": "API-Schlüssel" },
-  "apiKeyPlaceholder": { "message": "Wird lokal in diesem Browser gespeichert" },
-  "modelLabel": { "message": "Modell überschreiben (optional)" },
-  "modelPlaceholder": { "message": "Verwendet den Standard des Anbieters" },
-  "aiNotice": { "message": "Bei der KI-Organisation werden Titel und URLs von Tabs oder Lesezeichen an den ausgewählten Anbieter gesendet. API-Schlüssel bleiben im lokalen Speicher der Erweiterung und werden nur an diesen Anbieter gesendet. Dave AI erhält begrenzte Link-Daten und akzeptiert niemals beliebige Prompts." },
-  "saveSettingsButton": { "message": "Einstellungen speichern" },
-  "savedStatus": { "message": "Gespeichert." },
-  "aiAccessNotGranted": { "message": "KI-Zugriff wurde nicht gewährt; die Einstellungen wurden nicht geändert." },
-  "builtinCategoriesHeading": { "message": "Integrierte Kategorien" },
-  "builtinCategoriesNotice": { "message": "Die Offline-Erkennung umfasst 10.000 beliebte Domains sowie Titel, Metadaten und Domain-Schlüsselwörter." },
-  "aboutHeading": { "message": "Über Organizer" },
-  "aboutNotice": { "message": "Erfahre mehr über Organizer, sein auf Datenschutz ausgerichtetes Design und wie Spenden dabei helfen, unsere optionalen KI-Server zu betreiben." },
-  "aboutLink": { "message": "Organizer-Website besuchen →" },
-
-  "categoryWorkProductivity": { "message": "Arbeit & Produktivität" },
-  "categoryDevelopment": { "message": "Entwicklung" },
-  "categoryCommunication": { "message": "Kommunikation" },
-  "categorySocial": { "message": "Soziale Netzwerke" },
-  "categoryNewsReading": { "message": "Nachrichten & Lesen" },
-  "categoryVideoMusic": { "message": "Video & Musik" },
-  "categoryShopping": { "message": "Einkaufen" },
-  "categoryFinance": { "message": "Finanzen" },
-  "categoryTravelMaps": { "message": "Reisen & Karten" },
-  "categoryEducation": { "message": "Bildung" },
-  "categoryScienceReference": { "message": "Wissenschaft & Nachschlagewerke" },
-  "categoryHealthFitness": { "message": "Gesundheit & Fitness" },
-  "categorySports": { "message": "Sport" },
-  "categoryGaming": { "message": "Gaming" },
-  "categoryGovernment": { "message": "Behörden & öffentliche Dienste" },
-  "categoryFood": { "message": "Essen & Rezepte" },
-  "categoryRealEstate": { "message": "Wohnen & Immobilien" },
-  "categoryAiTools": { "message": "KI-Tools" },
-
-  "bgNoRestorableTabs": { "message": "In diesem Fenster gibt es keine wiederherstellbaren Tabs." },
-  "bgTabsSessionPrefix": { "message": "Tabs" },
-  "bgBookmarksBackupPrefix": { "message": "Lesezeichen" },
-  "bgBackupNotFound": { "message": "Sicherung nicht gefunden." },
-  "bgInvalidBackupFile": { "message": "Ungültige Sicherungsdatei." },
-  "bgUnknownAction": { "message": "Unbekannte Aktion." },
-  "bgJobAlreadyRunning": { "message": "Es läuft bereits eine KI-Organisationsaufgabe." },
-  "bgAiInvalidResponse": { "message": "Die KI hat eine ungültige Antwort zurückgegeben." },
-  "bgProviderReturned": { "message": "Dave AI hat $1 zurückgegeben." },
-  "bgVendorReturned": { "message": "Der KI-Anbieter hat $1 zurückgegeben." },
-  "bgAiTimedOut": { "message": "Die KI-Anfrage hat das Zeitlimit überschritten, bevor alle Verarbeitungsstapel abgeschlossen waren." },
-  "bgNoBookmarksToOrganize": { "message": "Keine Lesezeichen zum Organisieren." },
-  "bgNoBookmarkRoots": { "message": "Es wurden keine Lesezeichen-Speicherorte für die Wiederherstellung gefunden." },
-  "bgAddApiKey": { "message": "Füge deinen $1-API-Schlüssel in den Einstellungen hinzu." },
-  "bgBookmarksSkipped": { "message": "$1 Lesezeichen existierten nicht mehr und wurden übersprungen." },
-  "bgTabsSkipped": { "message": "$1 Tabs existierten nicht mehr und wurden übersprungen." },
-  "bgCancelledByYou": { "message": "Von dir abgebrochen." },
-  "bgJobNotFound": { "message": "KI-Aufgabe nicht gefunden." },
-  "bgApplyFailed": { "message": "Die KI ist fertig, aber Organizer konnte die Ergebnisse nicht anwenden: $1" },
-  "bgDaveCouldNotOrganize": { "message": "Dave AI konnte diese Elemente nicht organisieren." },
-  "bgImportedFolderTitle": { "message": "Importiert" },
-  "bgOrganizerFolderPrefix": { "message": "Organizer" }
+  "extDescription": {
+    "message": "Sichere, stelle wieder her, importiere, exportiere und organisiere Tabs und Lesezeichen."
+  },
+  "popupTitle": {
+    "message": "Organizer"
+  },
+  "popupSubtitle": {
+    "message": "Tabs und Lesezeichen, sicher gesichert."
+  },
+  "settingsButtonTitle": {
+    "message": "Einstellungen"
+  },
+  "organizeTabsButton": {
+    "message": "Tabs organisieren"
+  },
+  "organizeBookmarksButton": {
+    "message": "Lesezeichen organisieren"
+  },
+  "saveCloseButton": {
+    "message": "Als Sitzung speichern & schließen"
+  },
+  "saveTabsButton": {
+    "message": "Tabs sichern"
+  },
+  "saveBookmarksButton": {
+    "message": "Lesezeichen sichern"
+  },
+  "aiProcessingHeading": {
+    "message": "KI-Verarbeitung"
+  },
+  "tabSessionsHeading": {
+    "message": "Tab-Sitzungen"
+  },
+  "bookmarkBackupsHeading": {
+    "message": "Lesezeichen-Sicherungen"
+  },
+  "exportButton": {
+    "message": "Exportieren"
+  },
+  "importButton": {
+    "message": "Importieren"
+  },
+  "noSessionsYet": {
+    "message": "Noch keine gespeicherten Sitzungen."
+  },
+  "noBackupsYet": {
+    "message": "Noch keine Lesezeichen-Sicherungen."
+  },
+  "restoreButton": {
+    "message": "Wiederherstellen"
+  },
+  "deleteButton": {
+    "message": "Löschen"
+  },
+  "confirmDeleteBackup": {
+    "message": "Diese Sicherung löschen?"
+  },
+  "backupDeleted": {
+    "message": "Sicherung gelöscht."
+  },
+  "backupRestored": {
+    "message": "Sicherung wiederhergestellt."
+  },
+  "backupImported": {
+    "message": "Sicherung importiert."
+  },
+  "incompatibleBackupFile": {
+    "message": "Diese Datei ist keine kompatible Organizer-Sicherung."
+  },
+  "itemsCount": {
+    "message": "$1 Einträge"
+  },
+  "statusWorking": {
+    "message": "Wird verarbeitet…"
+  },
+  "statusDone": {
+    "message": "Fertig."
+  },
+  "preparingAiAccess": {
+    "message": "KI-Zugriff wird vorbereitet…"
+  },
+  "aiAccessRequired": {
+    "message": "Für die gewählte Organisationsmethode ist KI-Zugriff erforderlich. In den Einstellungen kannst du stattdessen die Offline-Methode wählen."
+  },
+  "creatingBackupSendingAi": {
+    "message": "Sicherheitskopie wird erstellt und Links werden an die KI gesendet…"
+  },
+  "aiProcessingTicker": {
+    "message": "Die KI verarbeitet die Daten … $1 s. Du kannst dieses Fenster geöffnet lassen."
+  },
+  "aiProcessingStarted": {
+    "message": "KI-Verarbeitung für $1 $2 gestartet. Du kannst dieses Fenster schließen; Organizer läuft im Hintergrund weiter."
+  },
+  "tabsOrganizedSuccess": {
+    "message": "Tabs organisiert; zuvor wurde eine Sicherung erstellt."
+  },
+  "bookmarksOrganizedSuccess": {
+    "message": "Lesezeichen organisiert; zuvor wurde eine Sicherung erstellt."
+  },
+  "sessionSavedClosed": {
+    "message": "Sitzung gespeichert; Fenster geschlossen."
+  },
+  "tabsBackedUp": {
+    "message": "Tabs gesichert."
+  },
+  "bookmarksBackedUp": {
+    "message": "Lesezeichen gesichert."
+  },
+  "cancelButton": {
+    "message": "Abbrechen"
+  },
+  "cancellingAiJob": {
+    "message": "KI-Aufgabe wird abgebrochen…"
+  },
+  "couldNotCancelAiJob": {
+    "message": "Die KI-Aufgabe konnte nicht abgebrochen werden."
+  },
+  "aiJobCancelled": {
+    "message": "KI-Aufgabe abgebrochen."
+  },
+  "kindTabsLabel": {
+    "message": "Tabs"
+  },
+  "kindBookmarksLabel": {
+    "message": "Lesezeichen"
+  },
+  "jobStateQueued": {
+    "message": "Warten auf KI · $1/$2 Stapel"
+  },
+  "jobStateProcessing": {
+    "message": "KI-Verarbeitung · $1/$2 Stapel"
+  },
+  "jobStateApplyingBookmarks": {
+    "message": "Ordner werden erstellt · $1/$2 Lesezeichen"
+  },
+  "jobStateApplyingTabs": {
+    "message": "Tabs werden organisiert · $1/$2 Tabs"
+  },
+  "jobStateCompletedBookmarks": {
+    "message": "Abgeschlossen · $1 Ordner"
+  },
+  "jobStateCompletedTabs": {
+    "message": "Abgeschlossen · $1 Gruppen"
+  },
+  "jobStateFailed": {
+    "message": "Fehlgeschlagen"
+  },
+  "jobStateCancelled": {
+    "message": "Abgebrochen"
+  },
+  "errorGeneric": {
+    "message": "Organizer konnte diese Aktion nicht abschließen."
+  },
+  "errorBackgroundRestarted": {
+    "message": "Der Hintergrundprozess von Organizer wurde neu gestartet. Öffne das Fenster erneut, um die gespeicherte KI-Aufgabe und ihren aktuellen Fortschritt zu sehen."
+  },
+  "errorBackgroundUnavailable": {
+    "message": "Der Hintergrundprozess von Organizer ist nicht verfügbar. Öffne das Fenster erneut; falls das Problem weiterhin besteht, lade die Erweiterung neu und versuche es erneut."
+  },
+  "errorAiTimeoutFriendly": {
+    "message": "Der KI-Dienst braucht länger als erwartet. Es wurden keine Tabs oder Lesezeichen geändert, und verbleibende KI-Stapel wurden abgebrochen. Bitte versuche es später erneut."
+  },
+  "errorNetworkUnreachable": {
+    "message": "Organizer konnte den KI-Dienst nicht erreichen. Überprüfe deine Verbindung und versuche es erneut; es wurden keine Tabs oder Lesezeichen geändert."
+  },
+  "errorBackgroundGone": {
+    "message": "Der Hintergrundprozess der Erweiterung hat nicht reagiert. Lade die Erweiterung neu und versuche es erneut."
+  },
+  "errorAiJobFailed": {
+    "message": "Die KI-Aufgabe konnte nicht abgeschlossen werden."
+  },
+  "optionsTitle": {
+    "message": "Organizer-Einstellungen"
+  },
+  "optionsHeading": {
+    "message": "Organizer-Einstellungen"
+  },
+  "optionsLead": {
+    "message": "Lege fest, wie Tabs und Lesezeichen kategorisiert werden."
+  },
+  "methodLabel": {
+    "message": "Organisationsmethode"
+  },
+  "methodAi": {
+    "message": "KI-Kategorien (Standard)"
+  },
+  "methodBuiltin": {
+    "message": "Integrierte Kategorien (privat, offline)"
+  },
+  "bookmarkScopeLabel": {
+    "message": "Nur Elemente auf der obersten Ebene organisieren"
+  },
+  "bookmarkScopeNote": {
+    "message": "Empfohlen. Lose Lesezeichen und Ordner, die sich direkt in der Symbolleiste oder unter Weitere Lesezeichen befinden, werden in neue Kategorieordner gruppiert, wobei der Inhalt jedes Ordners zusammenbleibt. Lesezeichen, die bereits in einem anderen Ordner liegen, werden nicht verändert. Deaktiviere dies, um deine gesamte Lesezeichensammlung neu zu kategorisieren."
+  },
+  "tabFallbackLabel": {
+    "message": "Wenn Tab-Gruppen nicht verfügbar sind"
+  },
+  "tabFallbackReorder": {
+    "message": "Tabs im aktuellen Fenster neu anordnen (Standard)"
+  },
+  "tabFallbackWindows": {
+    "message": "Ein Fenster pro Kategorie öffnen"
+  },
+  "tabFallbackNote": {
+    "message": "Chrome verwendet native Tab-Gruppen, wenn verfügbar. Diese Alternative wird von Firefox und anderen Browsern ohne Unterstützung für Tab-Gruppen verwendet."
+  },
+  "closeDuplicateTabsLabel": {
+    "message": "Wiederholte Tabs schließen"
+  },
+  "closeDuplicateTabsNote": {
+    "message": "Behält den ersten Tab für jede identische URL. Vor dem Schließen von Duplikaten wird eine Tab-Sitzungssicherung erstellt."
+  },
+  "removeDuplicateBookmarksLabel": {
+    "message": "Wiederholte Lesezeichen entfernen"
+  },
+  "removeDuplicateBookmarksNote": {
+    "message": "Behält das erste Lesezeichen für jede identische URL. Vor dem Entfernen von Duplikaten wird eine Sicherung erstellt."
+  },
+  "providerLabel": {
+    "message": "KI-Anbieter"
+  },
+  "providerDave": {
+    "message": "Dave AI (Standard, kein Schlüssel nötig)"
+  },
+  "providerOpenai": {
+    "message": "OpenAI"
+  },
+  "providerAnthropic": {
+    "message": "Anthropic Claude"
+  },
+  "providerGemini": {
+    "message": "Google Gemini"
+  },
+  "apiKeyLabel": {
+    "message": "API-Schlüssel"
+  },
+  "apiKeyPlaceholder": {
+    "message": "Wird lokal in diesem Browser gespeichert"
+  },
+  "modelLabel": {
+    "message": "Modell überschreiben (optional)"
+  },
+  "modelPlaceholder": {
+    "message": "Verwendet den Standard des Anbieters"
+  },
+  "aiNotice": {
+    "message": "Bei der KI-Organisation werden Titel und URLs von Tabs oder Lesezeichen an den ausgewählten Anbieter gesendet. API-Schlüssel bleiben im lokalen Speicher der Erweiterung und werden nur an diesen Anbieter gesendet. Dave AI erhält begrenzte Link-Daten und akzeptiert niemals beliebige Prompts."
+  },
+  "saveSettingsButton": {
+    "message": "Einstellungen speichern"
+  },
+  "savedStatus": {
+    "message": "Gespeichert."
+  },
+  "aiAccessNotGranted": {
+    "message": "KI-Zugriff wurde nicht gewährt; die Einstellungen wurden nicht geändert."
+  },
+  "builtinCategoriesHeading": {
+    "message": "Integrierte Kategorien"
+  },
+  "builtinCategoriesNotice": {
+    "message": "Die Offline-Erkennung umfasst 10.000 beliebte Domains sowie Titel, Metadaten und Domain-Schlüsselwörter."
+  },
+  "aboutHeading": {
+    "message": "Über Organizer"
+  },
+  "aboutNotice": {
+    "message": "Erfahre mehr über Organizer, sein auf Datenschutz ausgerichtetes Design und wie Spenden dabei helfen, unsere optionalen KI-Server zu betreiben."
+  },
+  "aboutLink": {
+    "message": "Organizer-Website besuchen →"
+  },
+  "categoryWorkProductivity": {
+    "message": "Arbeit & Produktivität"
+  },
+  "categoryDevelopment": {
+    "message": "Entwicklung"
+  },
+  "categoryCommunication": {
+    "message": "Kommunikation"
+  },
+  "categorySocial": {
+    "message": "Soziale Netzwerke"
+  },
+  "categoryNewsReading": {
+    "message": "Nachrichten & Lesen"
+  },
+  "categoryVideoMusic": {
+    "message": "Video & Musik"
+  },
+  "categoryShopping": {
+    "message": "Einkaufen"
+  },
+  "categoryFinance": {
+    "message": "Finanzen"
+  },
+  "categoryTravelMaps": {
+    "message": "Reisen & Karten"
+  },
+  "categoryEducation": {
+    "message": "Bildung"
+  },
+  "categoryScienceReference": {
+    "message": "Wissenschaft & Nachschlagewerke"
+  },
+  "categoryHealthFitness": {
+    "message": "Gesundheit & Fitness"
+  },
+  "categorySports": {
+    "message": "Sport"
+  },
+  "categoryGaming": {
+    "message": "Gaming"
+  },
+  "categoryGovernment": {
+    "message": "Behörden & öffentliche Dienste"
+  },
+  "categoryFood": {
+    "message": "Essen & Rezepte"
+  },
+  "categoryRealEstate": {
+    "message": "Wohnen & Immobilien"
+  },
+  "categoryAiTools": {
+    "message": "KI-Tools"
+  },
+  "bgNoRestorableTabs": {
+    "message": "In diesem Fenster gibt es keine wiederherstellbaren Tabs."
+  },
+  "bgTabsSessionPrefix": {
+    "message": "Tabs"
+  },
+  "bgBookmarksBackupPrefix": {
+    "message": "Lesezeichen"
+  },
+  "bgBackupNotFound": {
+    "message": "Sicherung nicht gefunden."
+  },
+  "bgInvalidBackupFile": {
+    "message": "Ungültige Sicherungsdatei."
+  },
+  "bgUnknownAction": {
+    "message": "Unbekannte Aktion."
+  },
+  "bgJobAlreadyRunning": {
+    "message": "Es läuft bereits eine KI-Organisationsaufgabe."
+  },
+  "bgAiInvalidResponse": {
+    "message": "Die KI hat eine ungültige Antwort zurückgegeben."
+  },
+  "bgProviderReturned": {
+    "message": "Dave AI hat $1 zurückgegeben."
+  },
+  "bgVendorReturned": {
+    "message": "Der KI-Anbieter hat $1 zurückgegeben."
+  },
+  "bgAiTimedOut": {
+    "message": "Die KI-Anfrage hat das Zeitlimit überschritten, bevor alle Verarbeitungsstapel abgeschlossen waren."
+  },
+  "bgNoBookmarksToOrganize": {
+    "message": "Keine Lesezeichen zum Organisieren."
+  },
+  "bgNoBookmarkRoots": {
+    "message": "Es wurden keine Lesezeichen-Speicherorte für die Wiederherstellung gefunden."
+  },
+  "bgAddApiKey": {
+    "message": "Füge deinen $1-API-Schlüssel in den Einstellungen hinzu."
+  },
+  "bgBookmarksSkipped": {
+    "message": "$1 Lesezeichen existierten nicht mehr und wurden übersprungen."
+  },
+  "bgTabsSkipped": {
+    "message": "$1 Tabs existierten nicht mehr und wurden übersprungen."
+  },
+  "bgCancelledByYou": {
+    "message": "Von dir abgebrochen."
+  },
+  "bgJobNotFound": {
+    "message": "KI-Aufgabe nicht gefunden."
+  },
+  "bgApplyFailed": {
+    "message": "Die KI ist fertig, aber Organizer konnte die Ergebnisse nicht anwenden: $1"
+  },
+  "bgDaveCouldNotOrganize": {
+    "message": "Dave AI konnte diese Elemente nicht organisieren."
+  },
+  "bgImportedFolderTitle": {
+    "message": "Importiert"
+  }
 }

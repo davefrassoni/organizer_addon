@@ -64,8 +64,32 @@ function row(item, store, restoreAction, count) {
   const remove = document.createElement("button"); remove.className = "small danger"; remove.textContent = t("deleteButton"); remove.onclick = () => { if (confirm(t("confirmDeleteBackup"))) run("delete", { store, id: item.id }, t("backupDeleted")); };
   actions.append(restore, remove); node.append(name, detail, actions); return node;
 }
+const AI_JOB_SEEN_MS = 5000;
+const AI_JOB_FADE_MS = 600;
+const dismissedAiJobIds = new Set();
+const dismissTimers = new Map();
+function finalizeDismiss(jobId) {
+  if (dismissedAiJobIds.has(jobId)) return;
+  dismissedAiJobIds.add(jobId);
+  document.querySelector(`[data-job-id="${CSS.escape(jobId)}"]`)?.remove();
+  $("#ai-jobs").hidden = !$("#ai-jobs-list").children.length;
+  message("dismissAiJob", { id: jobId }).catch(() => {});
+}
+function scheduleAiJobDismiss(job) {
+  if (dismissTimers.has(job.id) || dismissedAiJobIds.has(job.id)) return;
+  dismissTimers.set(job.id, setTimeout(() => {
+    dismissTimers.delete(job.id);
+    const node = document.querySelector(`[data-job-id="${CSS.escape(job.id)}"]`);
+    if (node) {
+      node.classList.add("fade-out");
+      node.addEventListener("transitionend", () => finalizeDismiss(job.id), { once: true });
+    }
+    setTimeout(() => finalizeDismiss(job.id), AI_JOB_FADE_MS + 200);
+  }, AI_JOB_SEEN_MS));
+}
 function aiJobRow(job) {
   const node = document.createElement("div"); node.className = `item ai-job ${job.state}`;
+  node.dataset.jobId = job.id;
   const kindLabel = job.kind === "tabs" ? t("kindTabsLabel") : t("kindBookmarksLabel");
   const title = document.createElement("strong"); title.textContent = `🤖 ${job.count} ${kindLabel}`;
   const detail = document.createElement("small");
@@ -92,13 +116,26 @@ function aiJobRow(job) {
   else { progress.max = Math.max(1, total); progress.value = job.state === "completed" ? total : completed; }
   node.append(title, detail, actions, progress); return node;
 }
+function renderAiJobs(jobs) {
+  const list = $("#ai-jobs-list");
+  // A job mid-fade keeps its existing DOM node (not a fresh one) so the CSS
+  // transition isn't interrupted by the next automatic poll's re-render.
+  const nodes = jobs.filter(job => !dismissedAiJobIds.has(job.id)).map(job => {
+    const existing = list.querySelector(`[data-job-id="${CSS.escape(job.id)}"]`);
+    if (existing && existing.classList.contains("fade-out")) return existing;
+    if (!activeAiJob(job)) scheduleAiJobDismiss(job);
+    return aiJobRow(job);
+  });
+  list.replaceChildren(...nodes);
+  $("#ai-jobs").hidden = !nodes.length;
+}
 async function render() {
   const response = await message("list"); if (!response.ok) return;
   const tabs = response.result.tabSessions || [], bookmarks = response.result.bookmarkBackups || [];
   currentAiJobs = response.result.aiJobs || {};
-  const jobs = Object.values(currentAiJobs).filter(Boolean);
-  $("#ai-jobs").hidden = !jobs.length;
-  $("#ai-jobs-list").replaceChildren(...jobs.map(aiJobRow));
+  // Most recently updated/finished jobs are shown first.
+  const jobs = Object.values(currentAiJobs).filter(Boolean).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+  renderAiJobs(jobs);
   $("#organize-bookmarks").disabled = activeAiJob(currentAiJobs.bookmarks);
   $("#organize-tabs").disabled = activeAiJob(currentAiJobs.tabs);
   $("#tabs-list").replaceChildren(...(tabs.length ? tabs.map(x => row(x, "tabSessions", "restoreTabs", x.tabs.length)) : [Object.assign(document.createElement("div"), { className: "empty", textContent: t("noSessionsYet") })]));
