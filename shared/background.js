@@ -5,6 +5,7 @@ const STORE = { tabs: "tabSessions", bookmarks: "bookmarkBackups", settings: "or
 const DEFAULTS = { method: "ai", provider: "dave", apiKeys: {}, model: "" };
 const DAVE_AI_ENDPOINT = "https://davefrassoni.com";
 const PUBLIC_CLIENT_KEY = "organizer-addon-v1"; // Identifier, not a secret. Server validation provides security.
+const AI_BATCH_SIZE = 200;
 const ALLOWED_URL = /^(https?|ftp):\/\//i;
 
 const call = (object, method, ...args) => new Promise((resolve, reject) => {
@@ -108,7 +109,8 @@ async function vendorAI(items, kind, config) {
 async function assign(items, kind) {
   const config = await settings();
   if (config.method !== "ai") return OrganizerCategories.assignments(items);
-  return config.provider === "dave" ? daveAI(items, kind, config) : vendorAI(items, kind, config);
+  const assignBatch = batch => config.provider === "dave" ? daveAI(batch, kind, config) : vendorAI(batch, kind, config);
+  return OrganizerCategories.batchedAssignments(items, AI_BATCH_SIZE, assignBatch);
 }
 
 async function organizeBookmarks() {
