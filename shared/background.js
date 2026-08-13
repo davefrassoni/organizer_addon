@@ -2,7 +2,7 @@
 if (typeof OrganizerCategories === "undefined" && typeof importScripts === "function") importScripts("categories.js");
 const api = globalThis.browser || globalThis.chrome;
 const STORE = { tabs: "tabSessions", bookmarks: "bookmarkBackups", settings: "organizerSettings" };
-const DEFAULTS = { method: "ai", provider: "dave", apiKeys: {}, model: "", tabFallback: "reorder" };
+const DEFAULTS = { method: "ai", provider: "dave", apiKeys: {}, model: "", tabFallback: "reorder", closeDuplicateTabs: false, removeDuplicateBookmarks: false };
 const DAVE_AI_ENDPOINT = "https://davefrassoni.com";
 const PUBLIC_CLIENT_KEY = "organizer-addon-v1"; // Identifier, not a secret. Server validation provides security.
 // Smaller batches keep local and hosted models from truncating long assignment arrays.
@@ -108,8 +108,8 @@ async function vendorAI(items, kind, config) {
   return normalizeAssignments(JSON.parse(text), items.length);
 }
 
-async function assign(items, kind) {
-  const config = await settings();
+async function assign(items, kind, selectedSettings = null) {
+  const config = selectedSettings || await settings();
   if (config.method !== "ai") return OrganizerCategories.assignments(items);
   if (config.provider === "dave") return daveAI(items, kind, config);
   const assignBatch = batch => vendorAI(batch, kind, config);
@@ -118,9 +118,15 @@ async function assign(items, kind) {
 
 async function organizeBookmarks() {
   await saveBookmarks();
-  const items = flattenBookmarks(await bookmarkTree()).map(node => ({ id: node.id, title: node.title || "", url: node.url }));
+  const config = await settings();
+  let items = flattenBookmarks(await bookmarkTree()).map(node => ({ id: node.id, title: node.title || "", url: node.url }));
   if (!items.length) throw new Error("No bookmarks to organize.");
-  const assignments = await assign(items, "bookmarks");
+  if (config.removeDuplicateBookmarks) {
+    const split = OrganizerCategories.splitDuplicateUrls(items);
+    for (const item of split.duplicates) await call(api.bookmarks, "remove", item.id);
+    items = split.unique;
+  }
+  const assignments = await assign(items, "bookmarks", config);
   const groups = assignments.reduce((all, row) => ((all[row.category] ||= []).push(row), all), {});
   const root = await call(api.bookmarks, "create", { title: `Organizer ${new Date().toLocaleDateString()}` });
   for (const [name, rows] of Object.entries(groups)) {
@@ -132,9 +138,16 @@ async function organizeBookmarks() {
 
 async function organizeTabs() {
   await saveTabs(false);
-  const tabs = validTabs(await queryTabs({ currentWindow: true }));
+  const config = await settings();
+  let tabs = validTabs(await queryTabs({ currentWindow: true }));
+  if (config.closeDuplicateTabs) {
+    const split = OrganizerCategories.splitDuplicateUrls(tabs);
+    const duplicateIds = split.duplicates.map(tab => tab.id).filter(Number.isInteger);
+    if (duplicateIds.length) await call(api.tabs, "remove", duplicateIds);
+    tabs = split.unique;
+  }
   const items = tabs.map(tab => ({ title: tab.title || "", url: tab.url }));
-  const [rows, config] = await Promise.all([assign(items, "tabs"), settings()]);
+  const rows = await assign(items, "tabs", config);
   const groups = rows.reduce((all, row) => ((all[row.category] ||= []).push(tabs[row.index]), all), {});
   if (api.tabs.group && api.tabGroups) {
     for (const [name, grouped] of Object.entries(groups)) { const groupId = await call(api.tabs, "group", { tabIds: grouped.map(tab => tab.id) }); await call(api.tabGroups, "update", groupId, { title: name, collapsed: false }); }

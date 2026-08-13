@@ -1,12 +1,16 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { categoryFor, assignments, batchedAssignments } = require("../shared/categories.js");
+const { categoryFor, assignments, splitDuplicateUrls, batchedAssignments } = require("../shared/categories.js");
 test("recognizes common services", () => {
   assert.equal(categoryFor({ url: "https://github.com/openai/codex", title: "Code" }), "Development");
   assert.equal(categoryFor({ url: "https://mail.google.com/", title: "Inbox" }), "Communication");
 });
 test("falls back to domain and preserves indexes", () => {
   assert.deepEqual(assignments([{ url: "https://example.org/a" }, { url: "https://example.org/b" }]), [{ index: 0, category: "example.org" }, { index: 1, category: "example.org" }]);
+});
+test("keeps the first identical URL and reports later duplicates", () => {
+  const first = { id: 1, url: "https://example.org/page" }, duplicate = { id: 2, url: "https://example.org/page" }, other = { id: 3, url: "https://example.org/other" };
+  assert.deepEqual(splitDuplicateUrls([first, duplicate, other]), { unique: [first, other], duplicates: [duplicate] });
 });
 test("combines AI batches while preserving indexes for large bookmark libraries", async () => {
   const items = Array.from({ length: 105 }, (_, index) => ({ url: `https://example.org/${index}` }));
