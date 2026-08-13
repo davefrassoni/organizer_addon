@@ -136,7 +136,9 @@ async function organizeTabs() {
   if (api.tabs.group && api.tabGroups) {
     for (const [name, grouped] of Object.entries(groups)) { const groupId = await call(api.tabs, "group", { tabIds: grouped.map(tab => tab.id) }); await call(api.tabGroups, "update", groupId, { title: name, collapsed: false }); }
   } else {
-    for (const grouped of Object.values(groups)) await call(api.windows, "create", { tabId: grouped[0].id }).then(async win => { for (const tab of grouped.slice(1)) await call(api.tabs, "move", tab.id, { windowId: win.id, index: -1 }); });
+    const ordered = Object.values(groups).flat();
+    const sameWindowOrder = [...ordered.filter(tab => tab.pinned), ...ordered.filter(tab => !tab.pinned)];
+    for (let index = 0; index < sameWindowOrder.length; index++) await call(api.tabs, "move", sameWindowOrder[index].id, { index });
   }
   return { count: tabs.length, categories: Object.keys(groups).length };
 }
