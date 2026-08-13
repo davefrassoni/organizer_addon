@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Organizer — Tabs & Bookmarks",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Back up, restore, import, export, and organize tabs and bookmarks.",
   "permissions": ["tabs", "bookmarks", "storage", "tabGroups"],
   "optional_host_permissions": ["https://davefrassoni.com/*", "https://api.openai.com/*", "https://api.anthropic.com/*", "https://generativelanguage.googleapis.com/*"],
