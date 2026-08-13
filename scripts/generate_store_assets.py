@@ -1,10 +1,12 @@
 """Create deterministic store banners from the approved campaign artwork."""
+import json
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "store-assets/source/promo-art-source.png"
-OUT = ROOT / "store-assets/v0.1.0"
+VERSION = json.loads((ROOT / "package.json").read_text())["version"]
+OUT = ROOT / "store-assets" / f"v{VERSION}"
 BOLD = "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
 REGULAR = "/System/Library/Fonts/Supplemental/Arial.ttf"
 
