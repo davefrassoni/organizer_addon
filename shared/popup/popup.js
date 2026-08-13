@@ -26,10 +26,7 @@ async function run(action, extra = {}, success = "") {
 }
 function requestAiAccess() {
   if (currentSettings.method !== "ai" || !api.permissions) return Promise.resolve(true);
-  const origins = { dave: "https://davefrassoni.com/*", openai: "https://api.openai.com/*", anthropic: "https://api.anthropic.com/*", gemini: "https://generativelanguage.googleapis.com/*" };
-  const request = { origins: [origins[currentSettings.provider] || origins.dave] };
-  if (globalThis.browser) { request.data_collection = ["browsingActivity", "bookmarksInfo"]; if (currentSettings.provider !== "dave") request.data_collection.push("authenticationInfo"); }
-  return api.permissions.request(request);
+  return OrganizerPermissions.request(currentSettings.provider);
 }
 async function organize(action, success, activeId) {
   setOrganizeBusy(true, activeId);
