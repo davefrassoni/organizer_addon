@@ -388,5 +388,17 @@
   },
   "bgImportedFolderTitle": {
     "message": "Importiert"
+  },
+  "excludeFoldersLabel": {
+    "message": "Lesezeichenordner selbst nicht verschieben"
+  },
+  "excludeFoldersNote": {
+    "message": "Ordner der obersten Ebene bleiben genau dort, wo sie sind, anstatt in einen Kategorieordner gruppiert zu werden."
+  },
+  "organizeInsideExcludedLabel": {
+    "message": "Die Lesezeichen in diesen Ordnern trotzdem organisieren"
+  },
+  "organizeInsideExcludedNote": {
+    "message": "Sortiert die eigenen Lesezeichen jedes Ordners als eigenen Stapel in neue, darin erstellte Kategorieordner, ohne den Ordner selbst zu verschieben."
   }
 }

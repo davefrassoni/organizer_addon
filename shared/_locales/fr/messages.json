@@ -388,5 +388,17 @@
   },
   "bgImportedFolderTitle": {
     "message": "Importé"
+  },
+  "excludeFoldersLabel": {
+    "message": "Ne pas déplacer les dossiers de favoris eux-mêmes"
+  },
+  "excludeFoldersNote": {
+    "message": "Les dossiers de premier niveau restent exactement où ils sont au lieu d'être regroupés dans un dossier de catégorie."
+  },
+  "organizeInsideExcludedLabel": {
+    "message": "Organiser quand même les favoris à l'intérieur de ces dossiers"
+  },
+  "organizeInsideExcludedNote": {
+    "message": "Classe les favoris propres à chaque dossier dans de nouveaux dossiers de catégorie créés à l'intérieur, comme leur propre lot, sans déplacer le dossier lui-même."
   }
 }

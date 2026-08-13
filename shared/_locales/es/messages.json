@@ -388,5 +388,17 @@
   },
   "bgImportedFolderTitle": {
     "message": "Importado"
+  },
+  "excludeFoldersLabel": {
+    "message": "No mover las carpetas de marcadores en sí"
+  },
+  "excludeFoldersNote": {
+    "message": "Las carpetas de nivel superior permanecen exactamente donde están en lugar de agruparse en una carpeta de categoría."
+  },
+  "organizeInsideExcludedLabel": {
+    "message": "Igualmente organizar los marcadores dentro de esas carpetas"
+  },
+  "organizeInsideExcludedNote": {
+    "message": "Clasifica los propios marcadores de cada carpeta en nuevas carpetas de categoría creadas dentro de ella, como su propio lote, sin mover la carpeta en sí."
   }
 }
