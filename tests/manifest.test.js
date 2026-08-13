@@ -1,0 +1,2 @@
+const test = require("node:test"); const assert = require("node:assert/strict"); const fs = require("node:fs");
+for (const browser of ["firefox", "chrome"]) test(`${browser} manifest is valid and versions match`, () => { const manifest = JSON.parse(fs.readFileSync(`${browser}/manifest.json`)); assert.equal(manifest.version, "0.1.0"); assert.ok(manifest.permissions.includes("tabs")); assert.ok(manifest.permissions.includes("bookmarks")); });
