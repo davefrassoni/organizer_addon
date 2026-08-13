@@ -1,11 +1,11 @@
 {
   "manifest_version": 3,
   "name": "Organizer — Tabs & Bookmarks",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Back up, restore, import, export, and organize tabs and bookmarks.",
   "permissions": ["tabs", "bookmarks", "storage"],
   "optional_host_permissions": ["https://davefrassoni.com/*", "https://api.openai.com/*", "https://api.anthropic.com/*", "https://generativelanguage.googleapis.com/*"],
-  "background": {"scripts": ["categories.js", "background.js"]},
+  "background": {"scripts": ["top-sites.js", "categories.js", "background.js"]},
   "action": {"default_popup": "popup/popup.html", "default_title": "Organizer", "default_icon": {"16": "icons/icon-16.png", "32": "icons/icon-32.png", "48": "icons/icon-48.png", "96": "icons/icon-96.png", "128": "icons/icon-128.png"}},
   "options_ui": {"page": "options/options.html", "open_in_tab": true},
   "browser_specific_settings": {"gecko": {"id": "organizer@davefrassoni.com", "strict_min_version": "140.0", "data_collection_permissions": {"required": ["none"], "optional": ["browsingActivity", "bookmarksInfo", "authenticationInfo"]}}, "gecko_android": {"strict_min_version": "142.0"}},

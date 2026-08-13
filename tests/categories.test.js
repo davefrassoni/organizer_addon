@@ -1,12 +1,18 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+require("../shared/top-sites.js");
 const { categoryFor, assignments, splitDuplicateUrls, batchedAssignments } = require("../shared/categories.js");
 test("recognizes common services", () => {
   assert.equal(categoryFor({ url: "https://github.com/openai/codex", title: "Code" }), "Development");
   assert.equal(categoryFor({ url: "https://mail.google.com/", title: "Inbox" }), "Communication");
 });
 test("falls back to domain and preserves indexes", () => {
-  assert.deepEqual(assignments([{ url: "https://example.org/a" }, { url: "https://example.org/b" }]), [{ index: 0, category: "example.org" }, { index: 1, category: "example.org" }]);
+  assert.deepEqual(assignments([{ url: "https://organizer-unknown.invalid/a" }, { url: "https://organizer-unknown.invalid/b" }]), [{ index: 0, category: "organizer-unknown.invalid" }, { index: 1, category: "organizer-unknown.invalid" }]);
+});
+test("ships exactly ten thousand popular domains for offline fallback", () => {
+  assert.equal(globalThis.OrganizerTopSites.length, 10000);
+  assert.equal(new Set(globalThis.OrganizerTopSites).size, 10000);
+  assert.equal(categoryFor({ url: "https://gstatic.com/", title: "" }), "Popular Websites");
 });
 test("keeps the first identical URL and reports later duplicates", () => {
   const first = { id: 1, url: "https://example.org/page" }, duplicate = { id: 2, url: "https://example.org/page" }, other = { id: 3, url: "https://example.org/other" };
