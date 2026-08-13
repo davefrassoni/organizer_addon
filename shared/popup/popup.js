@@ -7,7 +7,7 @@ function friendlyError(error, aiAction = false) {
   if (/receiving end does not exist|could not establish connection|message port closed|no matching message handler/i.test(detail)) return aiAction
     ? "Organizer lost contact with its background process. Your AI job may still be processing; reopen the popup. If this continues, reload the extension and try again."
     : "Organizer's background process is unavailable. Reopen the popup; if this continues, reload the extension and try again.";
-  if (/timed out|timeout|aborted/i.test(detail)) return "The AI service is taking longer than expected. No tabs or bookmarks were changed. Please try again later; lower-priority jobs may be waiting in the queue.";
+  if (/timed out|timeout|aborted/i.test(detail)) return "The AI service is taking longer than expected. No tabs or bookmarks were changed, and remaining AI batches were cancelled. Please try again later.";
   if (/failed to fetch|networkerror|network request failed/i.test(detail)) return "Organizer could not reach the AI service. Check your connection and try again; no tabs or bookmarks were changed.";
   return detail || "Organizer could not complete this action.";
 }

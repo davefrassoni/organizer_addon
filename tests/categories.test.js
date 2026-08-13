@@ -32,3 +32,13 @@ test("combines AI batches while preserving indexes for large bookmark libraries"
   assert.equal(rows[50].category, "Batch 2");
   assert.equal(rows[100].category, "Batch 3");
 });
+test("uses serialized byte size to keep unusually long links within the model context", async () => {
+  const items = Array.from({ length: 5 }, (_, index) => ({ url: `https://example.org/${index}/${"x".repeat(30)}` }));
+  const batchSizes = [];
+  const rows = await batchedAssignments(items, 50, async batch => {
+    batchSizes.push(batch.length);
+    return batch.map((_, index) => ({ index, category: "Safe" }));
+  }, 150);
+  assert.deepEqual(batchSizes, [2, 2, 1]);
+  assert.deepEqual(rows.map(row => row.index), [0, 1, 2, 3, 4]);
+});
