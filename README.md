@@ -4,6 +4,8 @@ A privacy-conscious Manifest V3 extension for Firefox and Chrome. Organizer can 
 
 Organization always creates a backup first. Dave AI is the default organization method and requests access only when the user organizes something. Users can instead select the private built-in method, OpenAI, Anthropic Claude, or Google Gemini. The built-in method categorizes locally using a generated catalog of 10,000 popular domains, common services, titles, and page metadata when available.
 
+AI collections are processed in batches of at most 50 links. A second 18,000-byte input cap automatically makes smaller batches for unusually long titles, URLs, or metadata; this leaves safe input and output headroom in the worker's 8k model context. Dave AI coordinates those batches under one parent request. If that request fails, expires, or is cancelled by the add-on, all unfinished child jobs are cancelled and their queued prompts are cleared.
+
 ## Privacy and AI
 
 The built-in organization method is local and sends nothing anywhere. AI is the default method; when the user organizes, titles and URLs are sent to the chosen provider after permission is granted. Vendor keys are supplied by the user, stored in local extension storage, and sent only to that vendor. Dave AI requires no user secret and accepts only a strict, size-limited link categorization schema—never arbitrary prompts. See [PRIVACY.md](PRIVACY.md).

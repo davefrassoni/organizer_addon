@@ -6,8 +6,13 @@ const STORE = { tabs: "tabSessions", bookmarks: "bookmarkBackups", settings: "or
 const DEFAULTS = { method: "ai", provider: "dave", apiKeys: {}, model: "", tabFallback: "reorder", closeDuplicateTabs: false, removeDuplicateBookmarks: false };
 const DAVE_AI_ENDPOINT = "https://davefrassoni.com";
 const PUBLIC_CLIENT_KEY = "organizer-addon-v1"; // Identifier, not a secret. Server validation provides security.
-// Smaller batches keep local and hosted models from truncating long assignment arrays.
+// Live worker timings show 50 items balances throughput and ~22-33s inference time.
+// The byte cap protects the 8k model context when titles or URLs are unusually long.
 const AI_BATCH_SIZE = 50;
+const AI_BATCH_MAX_BYTES = 18000;
+const DAVE_JOB_TIMEOUT_MS = 2 * 60 * 60 * 1000;
+const DAVE_FETCH_TIMEOUT_MS = 20000;
+const DAVE_POLL_INTERVAL_MS = 2000;
 const ALLOWED_URL = /^(https?|ftp):\/\//i;
 
 const call = (object, method, ...args) => new Promise((resolve, reject) => {
@@ -80,19 +85,52 @@ function normalizeAssignments(raw, length) {
   return Array.from({ length }, (_, index) => ({ index, category: map.get(index) || "Other" }));
 }
 
-async function daveAI(items, kind, config) {
-  const response = await fetch(`${DAVE_AI_ENDPOINT}/api/ai/organizer/jobs/`, { method: "POST", headers: { "Content-Type": "application/json", "X-Organizer-Client": PUBLIC_CLIENT_KEY }, body: JSON.stringify({ kind, items }) });
-  if (!response.ok) throw new Error((await response.json().catch(() => ({}))).detail || `Dave AI returned ${response.status}.`);
-  const created = await response.json();
-  // Very large collections may create hundreds of low-priority server jobs.
-  for (let attempt = 0; attempt < 3600; attempt++) {
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    const poll = await fetch(`${DAVE_AI_ENDPOINT}/api/ai/organizer/jobs/${created.id}/`, { headers: { "X-Organizer-Client": PUBLIC_CLIENT_KEY } });
-    const job = await poll.json();
-    if (job.status === "completed") return normalizeAssignments(job.result, items.length);
-    if (["failed", "delivery_failed"].includes(job.status)) throw new Error(job.error || "Dave AI could not organize these items.");
+async function daveFetch(path, options = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), DAVE_FETCH_TIMEOUT_MS);
+  try {
+    return await fetch(`${DAVE_AI_ENDPOINT}${path}`, { ...options, signal: controller.signal });
+  } catch (error) {
+    if (error?.name === "AbortError") throw new Error("The Dave AI network request timed out.");
+    throw error;
+  } finally {
+    clearTimeout(timer);
   }
-  throw new Error("The AI request timed out before every processing batch finished.");
+}
+
+async function cancelDaveJob(jobId) {
+  try {
+    await daveFetch(`/api/ai/organizer/jobs/${jobId}/cancel/`, { method: "POST", headers: { "X-Organizer-Client": PUBLIC_CLIENT_KEY } });
+  } catch (_) {
+    // The server also owns an expiry deadline, so a failed best-effort cancel
+    // cannot leave this parent request claimable forever.
+  }
+}
+
+async function daveAI(items, kind, config) {
+  let created;
+  let completed = false;
+  try {
+    const response = await daveFetch("/api/ai/organizer/jobs/", { method: "POST", headers: { "Content-Type": "application/json", "X-Organizer-Client": PUBLIC_CLIENT_KEY }, body: JSON.stringify({ kind, items }) });
+    if (!response.ok) throw new Error((await response.json().catch(() => ({}))).detail || `Dave AI returned ${response.status}.`);
+    created = await response.json();
+    const serverTimeout = Number(created.timeout_seconds) * 1000;
+    const deadline = Date.now() + Math.min(DAVE_JOB_TIMEOUT_MS, Number.isFinite(serverTimeout) && serverTimeout > 0 ? serverTimeout : Infinity);
+    while (Date.now() < deadline) {
+      await new Promise(resolve => setTimeout(resolve, DAVE_POLL_INTERVAL_MS));
+      const poll = await daveFetch(`/api/ai/organizer/jobs/${created.id}/`, { headers: { "X-Organizer-Client": PUBLIC_CLIENT_KEY } });
+      const job = await poll.json().catch(() => ({}));
+      if (!poll.ok) throw new Error(job.detail || `Dave AI returned ${poll.status}.`);
+      if (job.status === "completed") {
+        completed = true;
+        return normalizeAssignments(job.result, items.length);
+      }
+      if (["failed", "cancelled"].includes(job.status)) throw new Error(job.error || "Dave AI could not organize these items.");
+    }
+    throw new Error("The AI request timed out before every processing batch finished.");
+  } finally {
+    if (created?.id && !completed) await cancelDaveJob(created.id);
+  }
 }
 
 async function vendorAI(items, kind, config) {
@@ -114,7 +152,7 @@ async function assign(items, kind, selectedSettings = null) {
   if (config.method !== "ai") return OrganizerCategories.assignments(items);
   if (config.provider === "dave") return daveAI(items, kind, config);
   const assignBatch = batch => vendorAI(batch, kind, config);
-  return OrganizerCategories.batchedAssignments(items, AI_BATCH_SIZE, assignBatch);
+  return OrganizerCategories.batchedAssignments(items, AI_BATCH_SIZE, assignBatch, AI_BATCH_MAX_BYTES);
 }
 
 async function organizeBookmarks() {

@@ -47,14 +47,25 @@
     }
     return { unique, duplicates };
   }
-  async function batchedAssignments(items, batchSize, assignBatch) {
+  const serializedBytes = item => new TextEncoder().encode(JSON.stringify(item)).length;
+  async function batchedAssignments(items, batchSize, assignBatch, maxSerializedBytes = Infinity) {
     if (!Number.isInteger(batchSize) || batchSize < 1) throw new Error("Batch size must be a positive integer.");
+    if (!(maxSerializedBytes > 0)) throw new Error("Batch byte limit must be positive.");
     const combined = [];
-    for (let offset = 0; offset < items.length; offset += batchSize) {
-      const batch = items.slice(offset, offset + batchSize);
+    for (let offset = 0; offset < items.length;) {
+      const batch = [];
+      let batchBytes = 2;
+      while (offset + batch.length < items.length && batch.length < batchSize) {
+        const item = items[offset + batch.length];
+        const itemBytes = serializedBytes(item) + (batch.length ? 1 : 0);
+        if (batch.length && batchBytes + itemBytes > maxSerializedBytes) break;
+        batch.push(item);
+        batchBytes += itemBytes;
+      }
       const rows = await assignBatch(batch);
       if (!Array.isArray(rows) || rows.length !== batch.length) throw new Error("The AI returned an incomplete batch.");
       combined.push(...rows.map(row => ({ ...row, index: row.index + offset })));
+      offset += batch.length;
     }
     return combined;
   }
