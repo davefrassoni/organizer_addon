@@ -28,5 +28,16 @@
     return best ? best.name : (parsed ? parsed.hostname.replace(/^www\./, "") : "Other");
   }
   function assignments(items) { return items.map((item, index) => ({ index, category: categoryFor(item) })); }
-  return { CATEGORIES, categoryFor, assignments };
+  async function batchedAssignments(items, batchSize, assignBatch) {
+    if (!Number.isInteger(batchSize) || batchSize < 1) throw new Error("Batch size must be a positive integer.");
+    const combined = [];
+    for (let offset = 0; offset < items.length; offset += batchSize) {
+      const batch = items.slice(offset, offset + batchSize);
+      const rows = await assignBatch(batch);
+      if (!Array.isArray(rows) || rows.length !== batch.length) throw new Error("The AI returned an incomplete batch.");
+      combined.push(...rows.map(row => ({ ...row, index: row.index + offset })));
+    }
+    return combined;
+  }
+  return { CATEGORIES, categoryFor, assignments, batchedAssignments };
 });
