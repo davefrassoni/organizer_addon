@@ -2,11 +2,15 @@
 
 A privacy-conscious Manifest V3 extension for Firefox and Chrome. Organizer can save every restorable tab in the current window and close it, restore sessions into new windows, back up and restore bookmark trees, and import/export both backup types as JSON.
 
-Organization always creates a backup first. Dave AI is the default organization method and requests access only when the user organizes something. Users can instead select the private built-in method, OpenAI, Anthropic Claude, or Google Gemini. The built-in method categorizes locally using common services, domains, titles, and page metadata when available.
+Organization always creates a backup first. Dave AI is the default organization method and requests access only when the user organizes something. Users can instead select the private built-in method, OpenAI, Anthropic Claude, or Google Gemini. The built-in method categorizes locally using a generated catalog of 10,000 popular domains, common services, titles, and page metadata when available.
 
 ## Privacy and AI
 
-The default organization method is local and sends nothing anywhere. When a user explicitly selects AI organization, titles and URLs are sent to the chosen provider. Vendor keys are supplied by the user, stored in local extension storage, and sent only to that vendor. Dave AI requires no user secret and accepts only a strict, size-limited link categorization schema—never arbitrary prompts. See [PRIVACY.md](PRIVACY.md).
+The built-in organization method is local and sends nothing anywhere. AI is the default method; when the user organizes, titles and URLs are sent to the chosen provider after permission is granted. Vendor keys are supplied by the user, stored in local extension storage, and sent only to that vendor. Dave AI requires no user secret and accepts only a strict, size-limited link categorization schema—never arbitrary prompts. See [PRIVACY.md](PRIVACY.md).
+
+## Top-sites catalog
+
+`shared/top-sites.js` contains the first 10,000 domains from the Tranco research-oriented top-sites ranking. It contains domain names only and is loaded locally. To refresh it, download Tranco's current CSV and run `node scripts/generate_top_sites.js path/to/top-sites.csv`. Tranco combines multiple sources and requires attribution; see https://tranco-list.eu/.
 
 ## Build and test
 

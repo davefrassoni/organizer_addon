@@ -3,6 +3,7 @@ const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 const root = path.resolve(__dirname, "..");
 const version = require(path.join(root, "package.json")).version;
+if (!fs.existsSync(path.join(root, "shared", "top-sites.js"))) throw new Error("Run the top-sites catalog generator before building.");
 for (const browser of ["firefox", "chrome"]) {
   const target = path.join(root, "build", browser);
   fs.rmSync(target, { recursive: true, force: true });
