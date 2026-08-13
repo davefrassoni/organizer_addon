@@ -28,6 +28,15 @@
     return best ? best.name : (parsed ? parsed.hostname.replace(/^www\./, "") : "Other");
   }
   function assignments(items) { return items.map((item, index) => ({ index, category: categoryFor(item) })); }
+  function splitDuplicateUrls(items) {
+    const seen = new Set(), unique = [], duplicates = [];
+    for (const item of items) {
+      const url = String(item?.url || "");
+      (url && seen.has(url) ? duplicates : unique).push(item);
+      if (url) seen.add(url);
+    }
+    return { unique, duplicates };
+  }
   async function batchedAssignments(items, batchSize, assignBatch) {
     if (!Number.isInteger(batchSize) || batchSize < 1) throw new Error("Batch size must be a positive integer.");
     const combined = [];
@@ -39,5 +48,5 @@
     }
     return combined;
   }
-  return { CATEGORIES, categoryFor, assignments, batchedAssignments };
+  return { CATEGORIES, categoryFor, assignments, splitDuplicateUrls, batchedAssignments };
 });
