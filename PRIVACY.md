@@ -10,7 +10,7 @@ The built-in organizer, backup, restore, import, and export features operate loc
 
 ## Optional AI organization
 
-AI organization is disabled by default and requires an explicit choice in Settings. When enabled, Organizer sends only the titles, URLs, and limited metadata of the tabs or bookmarks the user asks it to organize. It does not send page bodies, cookies, form contents, unrelated browsing history, or arbitrary prompts.
+AI organization with Dave AI is the default organization method, but no data is sent until the user presses an Organize button and grants the browser's requested access. Organizer sends only the titles, URLs, and limited metadata of the tabs or bookmarks the user asks it to organize. It does not send page bodies, cookies, form contents, unrelated browsing history, or arbitrary prompts. Users can select the built-in offline method at any time.
 
 The user chooses the processor:
 

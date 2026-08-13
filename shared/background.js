@@ -1,8 +1,9 @@
 /* global OrganizerCategories */
-importScripts("categories.js");
+if (typeof OrganizerCategories === "undefined" && typeof importScripts === "function") importScripts("categories.js");
 const api = globalThis.browser || globalThis.chrome;
 const STORE = { tabs: "tabSessions", bookmarks: "bookmarkBackups", settings: "organizerSettings" };
-const DEFAULTS = { method: "builtin", provider: "dave", endpoint: "https://davefrassoni.com", apiKeys: {}, model: "" };
+const DEFAULTS = { method: "ai", provider: "dave", apiKeys: {}, model: "" };
+const DAVE_AI_ENDPOINT = "https://davefrassoni.com";
 const PUBLIC_CLIENT_KEY = "organizer-addon-v1"; // Identifier, not a secret. Server validation provides security.
 const ALLOWED_URL = /^(https?|ftp):\/\//i;
 
@@ -77,12 +78,12 @@ function normalizeAssignments(raw, length) {
 }
 
 async function daveAI(items, kind, config) {
-  const response = await fetch(`${config.endpoint.replace(/\/$/, "")}/api/ai/organizer/jobs/`, { method: "POST", headers: { "Content-Type": "application/json", "X-Organizer-Client": PUBLIC_CLIENT_KEY }, body: JSON.stringify({ kind, items }) });
+  const response = await fetch(`${DAVE_AI_ENDPOINT}/api/ai/organizer/jobs/`, { method: "POST", headers: { "Content-Type": "application/json", "X-Organizer-Client": PUBLIC_CLIENT_KEY }, body: JSON.stringify({ kind, items }) });
   if (!response.ok) throw new Error((await response.json().catch(() => ({}))).detail || `Dave AI returned ${response.status}.`);
   const created = await response.json();
   for (let attempt = 0; attempt < 60; attempt++) {
     await new Promise(resolve => setTimeout(resolve, 2000));
-    const poll = await fetch(`${config.endpoint.replace(/\/$/, "")}/api/ai/organizer/jobs/${created.id}/`, { headers: { "X-Organizer-Client": PUBLIC_CLIENT_KEY } });
+    const poll = await fetch(`${DAVE_AI_ENDPOINT}/api/ai/organizer/jobs/${created.id}/`, { headers: { "X-Organizer-Client": PUBLIC_CLIENT_KEY } });
     const job = await poll.json();
     if (job.status === "completed") return normalizeAssignments(job.result, items.length);
     if (["failed", "delivery_failed"].includes(job.status)) throw new Error(job.error || "Dave AI could not organize these items.");
