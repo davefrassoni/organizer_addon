@@ -7,6 +7,17 @@ async function run(action, extra = {}, success = "Done.") {
   try { const response = await message(action, extra); if (!response.ok) throw new Error(response.error); status.textContent = success; await render(); return response.result; }
   catch (error) { status.className = "error"; status.textContent = error.message; }
 }
+async function ensureAiAccess() {
+  const stored = await api.storage.local.get({ organizerSettings: { method: "ai", provider: "dave" } });
+  const settings = { method: "ai", provider: "dave", ...stored.organizerSettings };
+  if (settings.method !== "ai" || !api.permissions) return true;
+  const origins = { dave: "https://davefrassoni.com/*", openai: "https://api.openai.com/*", anthropic: "https://api.anthropic.com/*", gemini: "https://generativelanguage.googleapis.com/*" };
+  const request = { origins: [origins[settings.provider] || origins.dave] };
+  if (globalThis.browser) { request.data_collection = ["browsingActivity", "bookmarksInfo"]; if (settings.provider !== "dave") request.data_collection.push("authenticationInfo"); }
+  const granted = await api.permissions.request(request);
+  if (!granted) { $("#status").className = "error"; $("#status").textContent = "AI access is required for the selected organization method. You can choose the offline method in Settings."; }
+  return granted;
+}
 function row(item, store, restoreAction, count) {
   const node = document.createElement("div"); node.className = "item";
   const name = document.createElement("strong"); name.textContent = item.name;
@@ -26,8 +37,8 @@ function countBookmarks(nodes) { return (nodes || []).reduce((sum, x) => sum + (
 $("#save-close").onclick = () => run("saveTabs", { closeAfter: true }, "Tabs saved.");
 $("#save-tabs").onclick = () => run("saveTabs", {}, "Tabs backed up.");
 $("#save-bookmarks").onclick = () => run("saveBookmarks", {}, "Bookmarks backed up.");
-$("#organize-tabs").onclick = () => run("organizeTabs", {}, "Tabs organized; a backup was saved first.");
-$("#organize-bookmarks").onclick = () => run("organizeBookmarks", {}, "Bookmarks organized; a backup was saved first.");
+$("#organize-tabs").onclick = async () => { if (await ensureAiAccess()) run("organizeTabs", {}, "Tabs organized; a backup was saved first."); };
+$("#organize-bookmarks").onclick = async () => { if (await ensureAiAccess()) run("organizeBookmarks", {}, "Bookmarks organized; a backup was saved first."); };
 $("#settings").onclick = () => api.runtime.openOptionsPage();
 document.querySelectorAll("[data-export]").forEach(button => button.onclick = async () => { const response = await message("list"); const store = button.dataset.export; const blob = new Blob([JSON.stringify({ format: "organizer-addon", version: 1, type: store, items: response.result[store] }, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `organizer-${store}-${new Date().toISOString().slice(0,10)}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); });
 document.querySelectorAll("[data-import]").forEach(button => button.onclick = () => { pendingImport = button.dataset.import; $("#file").click(); });

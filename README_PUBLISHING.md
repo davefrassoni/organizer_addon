@@ -54,7 +54,7 @@ archive for this release.
 >
 > PRIVATE BY DEFAULT
 >
-> The built-in organizer works locally and AI organization is disabled by default. Organizer contains no analytics or advertising. If you enable AI organization, only the titles and URLs you ask to organize are sent to the provider you select. External access is requested only when you enable that provider.
+> Dave AI is the default organization method, but no data is sent until you press an Organize button and grant browser access. Organizer contains no analytics or advertising. Only the titles and URLs you ask to organize are sent to the provider you select. You can switch to the built-in offline method at any time.
 >
 > ALWAYS BACKED UP
 >
@@ -202,7 +202,7 @@ The built-in method works without granting them.
 
 **Notes for reviewers**
 
-> Organizer is functional without an account and defaults to local categorization. Open the toolbar popup to back up tabs or bookmarks. Automatic organization always creates a backup first. To test optional AI access, open Settings, choose AI categories, and select Dave AI; Firefox will request optional browsing-activity and bookmark data-transmission consent plus access to davefrassoni.com. OpenAI, Anthropic, and Gemini require a reviewer-supplied API key; no key is included in the package. All JavaScript is readable and unminified, and the build script only copies shared files and creates the browser-specific ZIP.
+> Organizer is functional without an account and defaults to Dave AI categorization. Open the toolbar popup to back up tabs or bookmarks. When Organize is first pressed, Firefox requests optional browsing-activity and bookmark data-transmission consent plus access to davefrassoni.com. No data is sent before that user action and consent. The built-in offline method is available in Settings. Automatic organization always creates a backup first. OpenAI, Anthropic, and Gemini require a reviewer-supplied API key; no key is included in the package. All JavaScript is readable and unminified, and the build script only copies shared files and creates the browser-specific ZIP.
 
 ## Official references
 

@@ -2,7 +2,7 @@
 
 A privacy-conscious Manifest V3 extension for Firefox and Chrome. Organizer can save every restorable tab in the current window and close it, restore sessions into new windows, back up and restore bookmark trees, and import/export both backup types as JSON.
 
-Organization always creates a backup first. The built-in method categorizes locally using common services, domains, titles, and page metadata when available. AI organization is optional: users can choose Dave AI (default AI provider), OpenAI, Anthropic Claude, or Google Gemini.
+Organization always creates a backup first. Dave AI is the default organization method and requests access only when the user organizes something. Users can instead select the private built-in method, OpenAI, Anthropic Claude, or Google Gemini. The built-in method categorizes locally using common services, domains, titles, and page metadata when available.
 
 ## Privacy and AI
 
