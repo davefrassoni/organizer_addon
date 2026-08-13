@@ -2,7 +2,7 @@
 if (typeof OrganizerCategories === "undefined" && typeof importScripts === "function") importScripts("categories.js");
 const api = globalThis.browser || globalThis.chrome;
 const STORE = { tabs: "tabSessions", bookmarks: "bookmarkBackups", settings: "organizerSettings" };
-const DEFAULTS = { method: "ai", provider: "dave", apiKeys: {}, model: "" };
+const DEFAULTS = { method: "ai", provider: "dave", apiKeys: {}, model: "", tabFallback: "reorder" };
 const DAVE_AI_ENDPOINT = "https://davefrassoni.com";
 const PUBLIC_CLIENT_KEY = "organizer-addon-v1"; // Identifier, not a secret. Server validation provides security.
 // Smaller batches keep local and hosted models from truncating long assignment arrays.
@@ -132,10 +132,15 @@ async function organizeTabs() {
   await saveTabs(false);
   const tabs = validTabs(await queryTabs({ currentWindow: true }));
   const items = tabs.map(tab => ({ title: tab.title || "", url: tab.url }));
-  const rows = await assign(items, "tabs");
+  const [rows, config] = await Promise.all([assign(items, "tabs"), settings()]);
   const groups = rows.reduce((all, row) => ((all[row.category] ||= []).push(tabs[row.index]), all), {});
   if (api.tabs.group && api.tabGroups) {
     for (const [name, grouped] of Object.entries(groups)) { const groupId = await call(api.tabs, "group", { tabIds: grouped.map(tab => tab.id) }); await call(api.tabGroups, "update", groupId, { title: name, collapsed: false }); }
+  } else if (config.tabFallback === "windows") {
+    for (const grouped of Object.values(groups)) {
+      const win = await call(api.windows, "create", { tabId: grouped[0].id });
+      for (const tab of grouped.slice(1)) await call(api.tabs, "move", tab.id, { windowId: win.id, index: -1 });
+    }
   } else {
     const ordered = Object.values(groups).flat();
     const sameWindowOrder = [...ordered.filter(tab => tab.pinned), ...ordered.filter(tab => !tab.pinned)];
