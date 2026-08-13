@@ -83,7 +83,8 @@ async function daveAI(items, kind, config) {
   const response = await fetch(`${DAVE_AI_ENDPOINT}/api/ai/organizer/jobs/`, { method: "POST", headers: { "Content-Type": "application/json", "X-Organizer-Client": PUBLIC_CLIENT_KEY }, body: JSON.stringify({ kind, items }) });
   if (!response.ok) throw new Error((await response.json().catch(() => ({}))).detail || `Dave AI returned ${response.status}.`);
   const created = await response.json();
-  for (let attempt = 0; attempt < 300; attempt++) {
+  // Very large collections may create hundreds of low-priority server jobs.
+  for (let attempt = 0; attempt < 3600; attempt++) {
     await new Promise(resolve => setTimeout(resolve, 2000));
     const poll = await fetch(`${DAVE_AI_ENDPOINT}/api/ai/organizer/jobs/${created.id}/`, { headers: { "X-Organizer-Client": PUBLIC_CLIENT_KEY } });
     const job = await poll.json();
