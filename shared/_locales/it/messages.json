@@ -388,5 +388,17 @@
   },
   "bgImportedFolderTitle": {
     "message": "Importato"
+  },
+  "excludeFoldersLabel": {
+    "message": "Non spostare le cartelle dei segnalibri stesse"
+  },
+  "excludeFoldersNote": {
+    "message": "Le cartelle di primo livello rimangono esattamente dove sono invece di essere raggruppate in una cartella di categoria."
+  },
+  "organizeInsideExcludedLabel": {
+    "message": "Organizza comunque i segnalibri all'interno di quelle cartelle"
+  },
+  "organizeInsideExcludedNote": {
+    "message": "Ordina i segnalibri di ciascuna cartella in nuove cartelle di categoria create al suo interno, come un proprio lotto, senza spostare la cartella stessa."
   }
 }

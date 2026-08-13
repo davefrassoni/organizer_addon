@@ -213,6 +213,63 @@ test("reorganizing bookmarks with the default loose scope moves loose bookmarks 
   assert.equal(categoryFolders.length, 1, "exactly one category folder, no extra wrapper folder");
 });
 
+test("excludeFoldersFromOrganizing leaves a top-level folder and its contents completely untouched", async () => {
+  const looseBookmarks = [
+    { id: "loose-1", title: "Loose 1", url: "https://example.com/loose1" },
+    { id: "loose-2", title: "Loose 2", url: "https://example.com/loose2" },
+  ];
+  const nested = [{ id: "buried-1", title: "Buried", url: "https://example.com/buried" }];
+  const folderContents = [
+    { id: "kept-1", title: "Kept", url: "https://example.com/kept" },
+    { id: "nested-folder", title: "Nested", children: nested },
+  ];
+  const tree = [{
+    id: "0", title: "", children: [
+      { id: "1", title: "Bookmarks Bar", children: [{ id: "folder-a", title: "My Folder", children: folderContents }, ...looseBookmarks] },
+    ],
+  }];
+  const shared = { storage: { organizerSettings: { method: "builtin", excludeFoldersFromOrganizing: true } }, tree };
+  const worker = backgroundHarness(shared, {});
+  const result = await worker.message("organizeBookmarks");
+  assert.equal(result.ok, true);
+  // Only the two loose bookmarks move; the folder and everything inside it
+  // (including its own direct bookmarks) is left exactly where it is.
+  assert.equal(shared.moves.length, 2);
+  assert.ok(shared.moves.every(move => move.id === "loose-1" || move.id === "loose-2"));
+  assert.ok(!shared.moves.some(move => ["folder-a", "kept-1", "buried-1", "nested-folder"].includes(move.id)));
+});
+
+test("excludeFoldersFromOrganizing + organizeInsideExcludedFolders sorts a folder's own bookmarks inside itself without moving the folder", async () => {
+  const looseBookmarks = [{ id: "loose-1", title: "Loose 1", url: "https://example.com/loose1" }];
+  const nested = [{ id: "buried-1", title: "Buried", url: "https://example.com/buried" }];
+  const folderContents = [
+    { id: "kept-1", title: "Kept", url: "https://example.com/kept" },
+    { id: "kept-2", title: "Kept 2", url: "https://example.com/kept2" },
+    { id: "nested-folder", title: "Nested", children: nested },
+  ];
+  const tree = [{
+    id: "0", title: "", children: [
+      { id: "1", title: "Bookmarks Bar", children: [{ id: "folder-a", title: "My Folder", children: folderContents }, ...looseBookmarks] },
+    ],
+  }];
+  const shared = { storage: { organizerSettings: { method: "builtin", excludeFoldersFromOrganizing: true, organizeInsideExcludedFolders: true } }, tree };
+  const worker = backgroundHarness(shared, {});
+  const result = await worker.message("organizeBookmarks");
+  assert.equal(result.ok, true);
+  // The folder itself never moves, and its nested subfolder is left alone —
+  // only its two direct bookmarks move, into a category folder created
+  // inside the original folder (id "folder-a"), plus the loose bookmark.
+  assert.equal(shared.moves.length, 3);
+  assert.ok(!shared.moves.some(move => move.id === "folder-a"), "the excluded folder itself must never move");
+  assert.ok(!shared.moves.some(move => ["buried-1", "nested-folder"].includes(move.id)), "nested subfolders inside an excluded folder stay untouched");
+  const kept1Move = shared.moves.find(move => move.id === "kept-1");
+  const kept2Move = shared.moves.find(move => move.id === "kept-2");
+  assert.ok(kept1Move && kept2Move);
+  assert.equal(kept1Move.parentId, kept2Move.parentId, "both of the folder's own bookmarks land in the same new category folder");
+  const categoryFolder = shared.created.find(node => node.id === kept1Move.parentId);
+  assert.equal(categoryFolder.parentId, "folder-a", "the category folder is created inside the excluded folder itself");
+});
+
 test("reorganizing bookmarks with scope 'all' also recategorizes bookmarks already in folders", async () => {
   const folderedBookmarks = [{ id: "kept-1", title: "Kept", url: "https://example.com/kept" }];
   const tree = [{

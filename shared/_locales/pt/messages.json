@@ -388,5 +388,17 @@
   },
   "bgImportedFolderTitle": {
     "message": "Importado"
+  },
+  "excludeFoldersLabel": {
+    "message": "Não mover as próprias pastas de favoritos"
+  },
+  "excludeFoldersNote": {
+    "message": "As pastas de nível superior permanecem exatamente onde estão, em vez de serem agrupadas em uma pasta de categoria."
+  },
+  "organizeInsideExcludedLabel": {
+    "message": "Mesmo assim, organizar os favoritos dentro dessas pastas"
+  },
+  "organizeInsideExcludedNote": {
+    "message": "Classifica os próprios favoritos de cada pasta em novas pastas de categoria criadas dentro dela, como seu próprio lote, sem mover a pasta em si."
   }
 }

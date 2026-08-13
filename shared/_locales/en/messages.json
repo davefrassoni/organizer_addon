@@ -388,5 +388,17 @@
   },
   "bgImportedFolderTitle": {
     "message": "Imported"
+  },
+  "excludeFoldersLabel": {
+    "message": "Don't move bookmark folders themselves"
+  },
+  "excludeFoldersNote": {
+    "message": "Top-level folders stay exactly where they are instead of being grouped into a category folder."
+  },
+  "organizeInsideExcludedLabel": {
+    "message": "Still organize the bookmarks inside those folders"
+  },
+  "organizeInsideExcludedNote": {
+    "message": "Sorts each folder's own bookmarks into new category folders created inside it, as their own batch, without moving the folder itself."
   }
 }

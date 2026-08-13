@@ -3,7 +3,7 @@ if (typeof OrganizerTopSites === "undefined" && typeof importScripts === "functi
 if (typeof OrganizerCategories === "undefined" && typeof importScripts === "function") importScripts("categories.js");
 const api = globalThis.browser || globalThis.chrome;
 const STORE = { tabs: "tabSessions", bookmarks: "bookmarkBackups", settings: "organizerSettings", aiJobs: "organizerAiJobs" };
-const DEFAULTS = { method: "ai", provider: "dave", apiKeys: {}, model: "", tabFallback: "reorder", closeDuplicateTabs: false, removeDuplicateBookmarks: false, bookmarkScope: "loose" };
+const DEFAULTS = { method: "ai", provider: "dave", apiKeys: {}, model: "", tabFallback: "reorder", closeDuplicateTabs: false, removeDuplicateBookmarks: false, bookmarkScope: "loose", excludeFoldersFromOrganizing: false, organizeInsideExcludedFolders: false };
 const DAVE_AI_ENDPOINT = "https://davefrassoni.com";
 const PUBLIC_CLIENT_KEY = "organizer-addon-v1"; // Identifier, not a secret. Server validation provides security.
 // Live worker timings show 50 items balances throughput and ~22-33s inference time.
@@ -90,12 +90,22 @@ function folderHostnames(node, out = new Set()) {
 // Folders that directly sit in a root and contain at least one bookmark are
 // sent and moved as a single unit (their contents move with them, intact)
 // instead of being skipped entirely or broken apart.
-function collectLooseBookmarks(roots) {
+// excludeFolders: when true, folders are never sent/moved as units — they
+// stay exactly where they are. organizeInsideExcluded: when also true, an
+// excluded folder's own direct bookmarks are still sent as their own batch
+// and organized into new category folders created inside that same folder,
+// without moving the folder itself or touching anything nested deeper.
+function collectLooseBookmarks(roots, { excludeFolders = false, organizeInsideExcluded = false } = {}) {
   const out = [];
   for (const root of roots) {
     for (const node of root.children || []) {
-      if (node.url && ALLOWED_URL.test(node.url)) out.push({ id: node.id, title: node.title, url: node.url, rootId: root.id });
-      else if (node.children && countBookmarksIn(node) > 0) out.push({ id: node.id, title: node.title || t("bgImportedFolderTitle"), url: representativeUrl(node), rootId: root.id, isFolder: true, metaTags: Array.from(folderHostnames(node)).slice(0, 20) });
+      if (node.url && ALLOWED_URL.test(node.url)) { out.push({ id: node.id, title: node.title, url: node.url, rootId: root.id }); continue; }
+      if (!node.children) continue;
+      if (excludeFolders) {
+        if (organizeInsideExcluded) for (const child of node.children) if (child.url && ALLOWED_URL.test(child.url)) out.push({ id: child.id, title: child.title, url: child.url, rootId: node.id });
+      } else if (countBookmarksIn(node) > 0) {
+        out.push({ id: node.id, title: node.title || t("bgImportedFolderTitle"), url: representativeUrl(node), rootId: root.id, isFolder: true, metaTags: Array.from(folderHostnames(node)).slice(0, 20) });
+      }
     }
   }
   return out;
@@ -473,7 +483,7 @@ async function organizeBookmarks() {
   await saveBookmarks();
   const config = await settings();
   const roots = await bookmarkRoots();
-  let items = config.bookmarkScope === "all" ? collectAllBookmarks(roots) : collectLooseBookmarks(roots);
+  let items = config.bookmarkScope === "all" ? collectAllBookmarks(roots) : collectLooseBookmarks(roots, { excludeFolders: !!config.excludeFoldersFromOrganizing, organizeInsideExcluded: !!config.organizeInsideExcludedFolders });
   if (!items.length) throw new Error(t("bgNoBookmarksToOrganize"));
   if (config.removeDuplicateBookmarks) {
     // Folders are never candidates for duplicate removal — only the
