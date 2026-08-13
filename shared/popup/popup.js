@@ -4,7 +4,7 @@ let pendingImport;
 let currentSettings = { method: "ai", provider: "dave" };
 function message(action, extra = {}) { return globalThis.browser ? api.runtime.sendMessage({ action, ...extra }) : new Promise((resolve, reject) => api.runtime.sendMessage({ action, ...extra }, response => { const error = api.runtime.lastError; error ? reject(new Error(error.message)) : resolve(response); })); }
 function status(text, type = "") { const node = $("#status"); node.className = type; node.textContent = text; }
-function setOrganizeBusy(busy) { for (const id of ["#organize-tabs", "#organize-bookmarks"]) { const button = $(id); button.disabled = busy; button.classList.toggle("loading", busy); } }
+function setOrganizeBusy(busy, activeId = "") { for (const id of ["#organize-tabs", "#organize-bookmarks"]) { const button = $(id); button.disabled = busy; button.classList.toggle("loading", busy && id === activeId); } }
 async function run(action, extra = {}, success = "Done.") {
   status("Working…", "busy");
   try { const response = await message(action, extra); if (!response?.ok) throw new Error(response?.error || "The extension background process did not respond. Reload the extension and try again."); status(success, "success"); await render(); return response.result; }
@@ -17,8 +17,8 @@ function requestAiAccess() {
   if (globalThis.browser) { request.data_collection = ["browsingActivity", "bookmarksInfo"]; if (currentSettings.provider !== "dave") request.data_collection.push("authenticationInfo"); }
   return api.permissions.request(request);
 }
-async function organize(action, success) {
-  setOrganizeBusy(true);
+async function organize(action, success, activeId) {
+  setOrganizeBusy(true, activeId);
   status("Preparing AI access…", "busy");
   let ticker;
   try {
@@ -60,8 +60,8 @@ async function loadSettings() { const stored = await api.storage.local.get({ org
 $("#save-close").onclick = () => run("saveTabs", { closeAfter: true }, "Tabs saved.");
 $("#save-tabs").onclick = () => run("saveTabs", {}, "Tabs backed up.");
 $("#save-bookmarks").onclick = () => run("saveBookmarks", {}, "Bookmarks backed up.");
-$("#organize-tabs").onclick = () => organize("organizeTabs", "Tabs organized; a backup was saved first.");
-$("#organize-bookmarks").onclick = () => organize("organizeBookmarks", "Bookmarks organized; a backup was saved first.");
+$("#organize-tabs").onclick = () => organize("organizeTabs", "Tabs organized; a backup was saved first.", "#organize-tabs");
+$("#organize-bookmarks").onclick = () => organize("organizeBookmarks", "Bookmarks organized; a backup was saved first.", "#organize-bookmarks");
 $("#settings").onclick = () => api.runtime.openOptionsPage();
 document.querySelectorAll("[data-export]").forEach(button => button.onclick = async () => { const response = await message("list"); const store = button.dataset.export; const blob = new Blob([JSON.stringify({ format: "organizer-addon", version: 1, type: store, items: response.result[store] }, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `organizer-${store}-${new Date().toISOString().slice(0,10)}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); });
 document.querySelectorAll("[data-import]").forEach(button => button.onclick = () => { pendingImport = button.dataset.import; $("#file").click(); });
