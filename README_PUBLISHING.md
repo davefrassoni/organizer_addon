@@ -1,8 +1,20 @@
 # Store publishing guide
 
-This guide is for Organizer v0.1.9. Keep the version identical in
+This guide is for Organizer v1.0.0. Keep the version identical in
 `package.json`, `chrome/manifest.json`, and `firefox/manifest.json` before each
 release.
+
+**Before you publish this version:** the screenshots referenced below still
+live under `store-assets/v0.1.9/` and were captured from an older popup and
+options layout (the AI buttons weren't first, restore buttons said "Open"
+instead of "Restore", and the folder-exclusion settings didn't exist yet).
+Re-render the updated HTML mockups in `store-assets/source/` at 1280×800 and
+capture fresh PNGs into a new `store-assets/v1.0.0/` folder — there is no
+automated capture pipeline in this repo, so this is a manual step (open each
+`store-assets/source/screenshot-*.html` file in a browser and take a full-size
+screenshot, then run `python scripts/generate_store_assets.py` to normalize
+and regenerate the promo tiles). Update the paths in this guide once that
+folder exists.
 
 ## Build and verify
 
@@ -17,8 +29,8 @@ Test `build/chrome` through `chrome://extensions` → **Developer mode** →
 
 Upload these packages:
 
-- Chrome: `dist/organizer-chrome-v0.1.9.zip`
-- Firefox: `dist/organizer-firefox-v0.1.9.zip`
+- Chrome: `dist/organizer-chrome-v1.0.0.zip`
+- Firefox: `dist/organizer-firefox-v1.0.0.zip`
 
 The ZIPs contain readable, unminified source and need no separate source-code
 archive for this release.
@@ -44,13 +56,14 @@ archive for this release.
 > • Back up all tabs in the current window
 > • Save and close a complete tab session in one action
 > • Restore saved sessions in a new window
-> • Back up and restore your bookmark organization
+> • Back up bookmarks and restore them back into place, matching your existing folders by name
 > • Delete backups you no longer need
 > • Import and export tab sessions and bookmark backups as JSON
-> • Automatically organize related tabs
-> • Automatically organize bookmarks, with a safety backup created first
+> • Automatically organize related tabs, reliably even in large windows or if you close the popup
+> • Automatically organize bookmarks without breaking folders you've already built, with a safety backup created first
 > • Choose private built-in categories or optional AI organization
 > • Choose Dave AI, OpenAI, Anthropic Claude, or Google Gemini
+> • Works in your browser's language — English, Spanish, French, German, Portuguese, and Italian
 >
 > PRIVATE BY DEFAULT
 >
@@ -58,7 +71,7 @@ archive for this release.
 >
 > ALWAYS BACKED UP
 >
-> Organizer creates a backup before every automatic organization operation, so you can keep working without putting your current setup at risk.
+> Organizer creates a backup before every automatic organization operation, so you can keep working without putting your current setup at risk. Large organize jobs keep running safely in the background and resume automatically, even if you close the popup or the browser restarts.
 >
 > OPEN SOURCE
 >
@@ -88,7 +101,8 @@ archive for this release.
 
 Use `shared/icons/icon-128.png` as the store icon.
 
-Upload screenshots from `store-assets/v0.1.9/` in this order:
+Upload screenshots from `store-assets/v1.0.0/` (see the callout at the top of
+this guide — that folder must be generated first) in this order:
 
 1. `screenshot-tab-sessions-1280x800.png`
 2. `screenshot-bookmarks-1280x800.png`
@@ -110,7 +124,12 @@ brand mark is `shared/icons/icon.svg`.
    and two-step verification if needed.
 2. Select **Add new item** and upload the Chrome ZIP.
 3. In **Store listing**, paste the shared listing content above.
-4. Set **Category** to **Productivity** and **Language** to **English**.
+4. Set **Category** to **Productivity** and **Language** to **English**. This
+   only sets the store listing's language — the extension's own UI already
+   auto-detects the browser's language via `_locales/` (English, Spanish,
+   French, German, Portuguese, Italian) independent of this setting.
+   Translating the store listing itself into additional languages is optional
+   future work via the dashboard's **Additional languages** option.
 5. Upload the icon, four screenshots, small promotional tile, and marquee from
    the paths above. A YouTube URL is optional; leave it empty until a real demo
    video exists.
@@ -139,6 +158,10 @@ brand mark is `shared/icons/icon.svg`.
 **`storage` permission**
 
 > Stores tab sessions, bookmark backups, organization settings, and optional user-supplied provider API keys in extension-local browser storage. API keys are not included in exported backup files.
+
+**`alarms` permission**
+
+> Schedules a recurring alarm (about every 30 seconds) only while an organize job is in progress, so the extension's background process can resume checking on and applying AI categorization results after being suspended, after the popup closes, or after the browser restarts. This is what lets a large organize job — thousands of bookmarks or hundreds of tabs — keep making progress reliably instead of silently stalling partway through. The alarm is cleared automatically once no job is active; Organizer does not use alarms for anything else.
 
 **`tabGroups` permission**
 
@@ -202,7 +225,7 @@ The built-in method works without granting them.
 
 **Notes for reviewers**
 
-> Organizer is functional without an account and defaults to Dave AI categorization. Open the toolbar popup to back up tabs or bookmarks. When Organize is first pressed, Firefox requests optional browsing-activity and bookmark data-transmission consent plus access to davefrassoni.com. No data is sent before that user action and consent. The built-in offline method is available in Settings. Automatic organization always creates a backup first. OpenAI, Anthropic, and Gemini require a reviewer-supplied API key; no key is included in the package. All JavaScript is readable and unminified, and the build script only copies shared files and creates the browser-specific ZIP.
+> Organizer is functional without an account and defaults to Dave AI categorization. Open the toolbar popup to back up tabs or bookmarks. When Organize is first pressed, Firefox requests optional browsing-activity and bookmark data-transmission consent plus access to davefrassoni.com. No data is sent before that user action and consent. The built-in offline method is available in Settings. Automatic organization always creates a backup first, and by default only touches loose bookmarks and top-level folders — folders already organized keep their contents, and this can be scoped further in Settings. Restoring a bookmark backup merges it back into the current tree (matching folders by name) instead of dumping it into a new folder. Large organize jobs use the `alarms` permission to resume automatically every ~30 seconds if the popup is closed or the browser restarts; the alarm is cleared once no job is active. The extension's UI follows the browser's language automatically (English, Spanish, French, German, Portuguese, Italian), independent of any AI provider. OpenAI, Anthropic, and Gemini require a reviewer-supplied API key; no key is included in the package. All JavaScript is readable and unminified, and the build script only copies shared files and creates the browser-specific ZIP.
 
 ## Official references
 
