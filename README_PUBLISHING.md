@@ -1,6 +1,6 @@
 # Store publishing guide
 
-This guide is for Organizer v0.1.0. Keep the version identical in
+This guide is for Organizer v0.1.9. Keep the version identical in
 `package.json`, `chrome/manifest.json`, and `firefox/manifest.json` before each
 release.
 
@@ -17,8 +17,8 @@ Test `build/chrome` through `chrome://extensions` → **Developer mode** →
 
 Upload these packages:
 
-- Chrome: `dist/organizer-chrome-v0.1.0.zip`
-- Firefox: `dist/organizer-firefox-v0.1.0.zip`
+- Chrome: `dist/organizer-chrome-v0.1.9.zip`
+- Firefox: `dist/organizer-firefox-v0.1.9.zip`
 
 The ZIPs contain readable, unminified source and need no separate source-code
 archive for this release.
@@ -88,7 +88,7 @@ archive for this release.
 
 Use `shared/icons/icon-128.png` as the store icon.
 
-Upload screenshots from `store-assets/v0.1.0/` in this order:
+Upload screenshots from `store-assets/v0.1.9/` in this order:
 
 1. `screenshot-tab-sessions-1280x800.png`
 2. `screenshot-bookmarks-1280x800.png`
