@@ -4,23 +4,50 @@ const fs = require("node:fs");
 const vm = require("node:vm");
 
 const backgroundSource = fs.readFileSync("shared/background.js", "utf8");
+const enMessages = JSON.parse(fs.readFileSync("shared/_locales/en/messages.json", "utf8"));
 
 function response(body, status = 200) {
   return { ok: status >= 200 && status < 300, status, json: async () => body };
 }
 
+function defaultTree(bookmarks) {
+  return [{ id: "0", title: "", children: [{ id: "1", title: "Other Bookmarks", children: bookmarks }] }];
+}
+
 function backgroundHarness(shared, remoteState) {
+  shared.tree ||= defaultTree(shared.bookmarks || []);
+  shared.tabsList ||= [];
+  shared.created ||= [];
+  shared.moves ||= [];
+  shared.tabMoves ||= [];
+  shared.groups ||= {};
+  shared.groupTitles ||= {};
+  shared.windowsCreated ||= [];
+  shared.folderSequence ||= 0;
+  shared.groupSequence ||= 0;
+  shared.windowSequence ||= 0;
+  shared.alarms ||= {};
   let messageListener, alarmListener;
-  const bookmarks = Array.from({ length: 300 }, (_, index) => ({ id: `bookmark-${index}`, title: `Bookmark ${index}`, url: `https://example.com/${index}` }));
   const api = {
     bookmarks: {
-      async getTree() { return [{ id: "root", children: bookmarks }]; },
-      async create(details) { const folder = { id: `folder-${++shared.folderSequence}`, ...details }; shared.createdFolders.push(folder); return folder; },
+      async getTree() { return shared.tree; },
+      async create(details) { const node = { id: `node-${++shared.folderSequence}`, ...details }; shared.created.push(node); return node; },
       async move(id, details) { shared.moves.push({ id, ...details }); return { id, ...details }; },
       async remove() {},
     },
-    tabs: { async query() { return []; } },
-    windows: {},
+    tabs: {
+      async query() { return shared.tabsList; },
+      async group(details) {
+        if (details.groupId != null) { shared.groups[details.groupId].push(...details.tabIds); return details.groupId; }
+        const groupId = `group-${++shared.groupSequence}`;
+        shared.groups[groupId] = [...details.tabIds];
+        return groupId;
+      },
+      async move(id, details) { shared.tabMoves.push({ id, ...details }); return { id, ...details }; },
+      async remove() {},
+    },
+    tabGroups: { async update(groupId, details) { shared.groupTitles[groupId] = details.title; } },
+    windows: { async create(details) { const win = { id: `win-${++shared.windowSequence}`, ...details }; shared.windowsCreated.push(win); return win; } },
     storage: { local: {
       async get(defaults) { return { ...defaults, ...shared.storage }; },
       async set(values) { Object.assign(shared.storage, structuredClone(values)); },
@@ -30,6 +57,7 @@ function backgroundHarness(shared, remoteState) {
       async clear(name) { delete shared.alarms[name]; return true; },
       onAlarm: { addListener(listener) { alarmListener = listener; } },
     },
+    i18n: { getMessage(key, subs) { const entry = enMessages[key]; if (!entry) return key; const list = subs == null ? [] : Array.isArray(subs) ? subs : [subs]; return entry.message.replace(/\$(\d+)/g, (_, n) => list[Number(n) - 1] ?? ""); } },
     runtime: {
       lastError: null,
       onMessage: { addListener(listener) { messageListener = listener; } },
@@ -48,7 +76,7 @@ function backgroundHarness(shared, remoteState) {
       if (options.method === "POST" && /\/organizer\/jobs\/$/.test(url)) return response({ id: "parent-job", status: "queued", chunks: 6, timeout_seconds: 900, expires_at: "2099-01-01T00:00:00Z" }, 201);
       if (/\/organizer\/jobs\/parent-job\/$/.test(url)) {
         if (remoteState.status !== "completed") return response({ id: "parent-job", status: remoteState.status, progress: remoteState.progress, result: null, error: "" });
-        return response({ id: "parent-job", status: "completed", progress: { completed: 6, total: 6 }, result: { assignments: bookmarks.map((_, index) => ({ index, category: `Group ${index % 3}` })) }, error: "" });
+        return response({ id: "parent-job", status: "completed", progress: { completed: 6, total: 6 }, result: { assignments: remoteState.assignments }, error: "" });
       }
       if (/\/cancel\/$/.test(url)) return response({ status: "cancelled" });
       throw new Error(`Unexpected fetch: ${url}`);
@@ -67,7 +95,7 @@ function backgroundHarness(shared, remoteState) {
     async message(action, extra = {}) {
       return new Promise(resolve => messageListener({ action, ...extra }, null, resolve));
     },
-    alarm() { alarmListener({ name: "organizer-dave-ai-jobs" }); },
+    alarm() { alarmListener({ name: "organizer-ai-jobs" }); },
   };
 }
 
@@ -81,18 +109,19 @@ async function waitFor(predicate, timeout = 3000) {
 }
 
 test("a 300-bookmark Dave job resumes after a background restart and applies every move", async () => {
+  const bookmarks = Array.from({ length: 300 }, (_, index) => ({ id: `bookmark-${index}`, title: `Bookmark ${index}`, url: `https://example.com/${index}` }));
   const shared = {
     storage: { organizerSettings: { method: "ai", provider: "dave", removeDuplicateBookmarks: false } },
-    moves: [], createdFolders: [], folderSequence: 0, alarms: {},
+    bookmarks,
   };
-  const remote = { status: "queued", progress: { completed: 0, total: 6 } };
+  const remote = { status: "queued", progress: { completed: 0, total: 6 }, assignments: bookmarks.map((_, index) => ({ index, category: `Group ${index % 3}` })) };
   const firstWorker = backgroundHarness(shared, remote);
   const submitted = await firstWorker.message("organizeBookmarks");
   assert.equal(submitted.ok, true);
   assert.equal(submitted.result.pending, true);
   assert.equal(submitted.result.job.count, 300);
   assert.equal(shared.storage.organizerAiJobs.bookmarks.state, "queued");
-  assert.ok(shared.alarms["organizer-dave-ai-jobs"]);
+  assert.ok(shared.alarms["organizer-ai-jobs"]);
   assert.equal(shared.moves.length, 0);
 
   // Simulate the browser terminating the first service worker. A fresh worker
@@ -106,6 +135,138 @@ test("a 300-bookmark Dave job resumes after a background restart and applies eve
   assert.equal(shared.moves.length, 300);
   assert.equal(job.applyProgress, 300);
   assert.equal(job.categories, 3);
-  assert.equal(job.bookmarkRefs, undefined);
-  assert.equal(shared.alarms["organizer-dave-ai-jobs"], undefined);
+  assert.equal(job.refs, undefined);
+  assert.equal(shared.alarms["organizer-ai-jobs"], undefined);
+  // Every root-level "Organizer <date>" folder and category folder is created
+  // inside the bookmark's own root (id "1"), never left to the browser default.
+  assert.ok(shared.created.every(node => node.parentId === "1" || Object.values(shared.created).some(f => f.id === node.parentId)));
+});
+
+test("a Dave tab-organize job resumes after a background restart and groups every tab", async () => {
+  const tabs = Array.from({ length: 40 }, (_, index) => ({ id: index + 1, title: `Tab ${index}`, url: `https://example.com/${index}`, pinned: false }));
+  const shared = { storage: { organizerSettings: { method: "ai", provider: "dave" } }, tabsList: tabs };
+  const remote = { status: "queued", progress: { completed: 0, total: 1 }, assignments: tabs.map((_, index) => ({ index, category: `Group ${index % 4}` })) };
+  const firstWorker = backgroundHarness(shared, remote);
+  const submitted = await firstWorker.message("organizeTabs");
+  assert.equal(submitted.ok, true);
+  assert.equal(submitted.result.pending, true);
+  assert.equal(submitted.result.job.kind, "tabs");
+  assert.equal(shared.tabMoves.length, 0);
+  assert.equal(Object.keys(shared.groups).length, 0);
+
+  remote.status = "completed";
+  const restartedWorker = backgroundHarness(shared, remote);
+  restartedWorker.alarm();
+  await waitFor(() => shared.storage.organizerAiJobs.tabs?.state === "completed");
+
+  const job = shared.storage.organizerAiJobs.tabs;
+  assert.equal(job.applyProgress, 40);
+  assert.equal(job.categories, 4);
+  assert.equal(job.refs, undefined);
+  assert.equal(Object.keys(shared.groups).length, 4);
+  assert.equal(Object.values(shared.groups).flat().length, 40);
+});
+
+test("a built-in (non-Dave) bookmark job is resumable if interrupted mid-apply", async () => {
+  const bookmarks = Array.from({ length: 120 }, (_, index) => ({ id: `bookmark-${index}`, title: `Bookmark ${index}`, url: `https://example.com/${index}` }));
+  const shared = { storage: { organizerSettings: { method: "builtin" } }, bookmarks };
+  const worker = backgroundHarness(shared, {});
+  const result = await worker.message("organizeBookmarks");
+  assert.equal(result.ok, true);
+  // The built-in method applies synchronously within the same call for a
+  // library this size, but it still goes through the checkpointed job path.
+  assert.equal(shared.storage.organizerAiJobs.bookmarks.state, "completed");
+  assert.equal(shared.moves.length, 120);
+});
+
+test("reorganizing bookmarks with the default loose scope leaves user folders untouched", async () => {
+  const looseBookmarks = [
+    { id: "loose-1", title: "Loose 1", url: "https://example.com/loose1" },
+    { id: "loose-2", title: "Loose 2", url: "https://example.com/loose2" },
+  ];
+  const folderedBookmarks = [{ id: "kept-1", title: "Kept", url: "https://example.com/kept" }];
+  const tree = [{
+    id: "0", title: "", children: [
+      { id: "1", title: "Bookmarks Bar", children: [{ id: "folder-a", title: "My Folder", children: folderedBookmarks }, ...looseBookmarks] },
+      { id: "2", title: "Other Bookmarks", children: [] },
+    ],
+  }];
+  const shared = { storage: { organizerSettings: { method: "builtin" } }, tree };
+  const worker = backgroundHarness(shared, {});
+  const result = await worker.message("organizeBookmarks");
+  assert.equal(result.ok, true);
+  assert.equal(shared.moves.length, 2, "only the two loose bookmarks should move");
+  assert.ok(shared.moves.every(move => move.id === "loose-1" || move.id === "loose-2"));
+  assert.ok(!shared.moves.some(move => move.id === "kept-1"), "bookmarks already inside a user folder must not move");
+  // The new "Organizer <date>" root is created inside the same root ("1")
+  // the loose bookmarks came from, not the browser's default location.
+  const organizerRoot = shared.created.find(node => node.parentId === "1" && !node.url);
+  assert.ok(organizerRoot, "an Organizer root folder should be created under root 1");
+});
+
+test("reorganizing bookmarks with scope 'all' also recategorizes bookmarks already in folders", async () => {
+  const folderedBookmarks = [{ id: "kept-1", title: "Kept", url: "https://example.com/kept" }];
+  const tree = [{
+    id: "0", title: "", children: [
+      { id: "1", title: "Bookmarks Bar", children: [{ id: "folder-a", title: "My Folder", children: folderedBookmarks }] },
+    ],
+  }];
+  const shared = { storage: { organizerSettings: { method: "builtin", bookmarkScope: "all" } }, tree };
+  const worker = backgroundHarness(shared, {});
+  const result = await worker.message("organizeBookmarks");
+  assert.equal(result.ok, true);
+  assert.equal(shared.moves.length, 1);
+  assert.equal(shared.moves[0].id, "kept-1");
+});
+
+test("restoring a bookmark snapshot merges it back into the current tree instead of a wrapper folder", async () => {
+  const snapshotTree = [{
+    id: "0", title: "", children: [
+      {
+        id: "1", title: "Bookmarks Bar", children: [
+          { id: "s-folder-work", title: "Work", children: [{ id: "s-b1", title: "Docs", url: "https://example.com/docs" }] },
+          { id: "s-folder-gone", title: "Gone Folder", children: [{ id: "s-b2", title: "Gone", url: "https://example.com/gone" }] },
+          { id: "s-b3", title: "Loose", url: "https://example.com/loose" },
+        ],
+      },
+    ],
+  }];
+  const liveTree = [{
+    id: "0", title: "", children: [
+      {
+        id: "live-1", title: "Bookmarks Bar", children: [
+          { id: "live-folder-work", title: "Work", children: [] },
+          { id: "live-existing", title: "Docs", url: "https://example.com/docs" },
+          { id: "live-loose", title: "Loose", url: "https://example.com/loose" },
+        ],
+      },
+    ],
+  }];
+  const shared = {
+    storage: { bookmarkBackups: [{ id: "backup-1", name: "Bookmarks — snapshot", createdAt: new Date().toISOString(), tree: snapshotTree }] },
+    tree: liveTree,
+  };
+  const worker = backgroundHarness(shared, {});
+  const result = await worker.message("restoreBookmarks", { id: "backup-1" });
+  assert.equal(result.ok, true);
+
+  // No synthetic "<name> restored" wrapper folder is ever created.
+  assert.ok(!shared.created.some(node => /restored/i.test(node.title || "")));
+  // "Docs" is restored inside "Work" (where the snapshot had it) since the
+  // live "Work" folder doesn't already contain it — dedupe is scoped per
+  // folder, not global, so the same URL sitting loose elsewhere doesn't block it.
+  const createdDocs = shared.created.filter(node => node.url === "https://example.com/docs");
+  assert.equal(createdDocs.length, 1);
+  assert.equal(createdDocs[0].parentId, "live-folder-work");
+  // "Work" already exists (matched by title) and is reused, not recreated.
+  assert.ok(!shared.created.some(node => node.title === "Work"));
+  // "Gone Folder" no longer exists live, so it is recreated directly under
+  // the matched live root, and its bookmark restored inside it.
+  const goneFolder = shared.created.find(node => node.title === "Gone Folder");
+  assert.ok(goneFolder);
+  assert.equal(goneFolder.parentId, "live-1");
+  assert.ok(shared.created.some(node => node.url === "https://example.com/gone" && node.parentId === goneFolder.id));
+  // "Loose" already exists directly under the same live root with the same
+  // URL, so restoring it again does not create a duplicate.
+  assert.ok(!shared.created.some(node => node.url === "https://example.com/loose"));
 });
