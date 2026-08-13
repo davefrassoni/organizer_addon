@@ -2,7 +2,7 @@
 
 Last updated: August 13, 2026.
 
-Organizer stores tab-session backups, bookmark backups, settings, and optional AI-provider API keys locally in the user's browser. It has no analytics, advertising, tracking pixels, or sale of user information.
+Organizer stores tab-session backups, bookmark backups, settings, resumable AI job status, and optional AI-provider API keys locally in the user's browser. Resumable job records contain the Dave parent job ID and browser bookmark IDs, but do not duplicate bookmark titles or URLs. Organizer has no analytics, advertising, tracking pixels, or sale of user information.
 
 ## Local features
 
