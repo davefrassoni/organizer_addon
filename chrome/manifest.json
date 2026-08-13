@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "description": "Back up, restore, import, export, and organize tabs and bookmarks.",
   "permissions": ["tabs", "bookmarks", "storage", "tabGroups"],
-  "host_permissions": ["https://davefrassoni.com/*", "https://api.openai.com/*", "https://api.anthropic.com/*", "https://generativelanguage.googleapis.com/*"],
+  "optional_host_permissions": ["https://davefrassoni.com/*", "https://api.openai.com/*", "https://api.anthropic.com/*", "https://generativelanguage.googleapis.com/*"],
   "background": {"service_worker": "background.js"},
-  "action": {"default_popup": "popup/popup.html", "default_title": "Organizer"},
+  "action": {"default_popup": "popup/popup.html", "default_title": "Organizer", "default_icon": {"16": "icons/icon-16.png", "32": "icons/icon-32.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png"}},
   "options_page": "options/options.html",
   "icons": {"16": "icons/icon-16.png", "32": "icons/icon-32.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png"}
 }
