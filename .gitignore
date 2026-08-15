@@ -2,4 +2,5 @@ build/
 dist/
 *.pem
 .DS_Store
+.env
 
