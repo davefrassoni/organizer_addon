@@ -2,6 +2,8 @@
 
 A privacy-conscious Manifest V3 extension for Firefox and Chrome. Organizer can save every restorable tab in the current window and close it, restore sessions into new windows, back up and restore bookmark trees, and import/export both backup types as JSON.
 
+[Landing page](https://davefrassoni.com/organizer/) · [Install for Firefox](https://addons.mozilla.org/en-US/firefox/addon/organizer-tabs-bookmarks/) · [Install for Chrome](https://chromewebstore.google.com/detail/organizer-%E2%80%94-tabs-bookmark/hkdidohkmfhjahagjihpohjenkjejbpl)
+
 Organization always creates a backup first. Dave AI is the default organization method and requests access only when the user organizes something. Users can instead select the private built-in method, OpenAI, Anthropic Claude, or Google Gemini. The built-in method categorizes locally using a generated catalog of 10,000 popular domains, common services, titles, and page metadata when available.
 
 By default, organizing bookmarks only touches items sitting directly in a root (Bookmarks Bar, Other Bookmarks, Mobile Bookmarks): loose bookmarks and top-level folders are sent for categorization, and the resulting category folders are created directly inside that same root — never a separate "Organizer" wrapper folder. A folder is sent and moved as a single unit, so its own contents (including anything nested inside it) move together and are never broken apart or recategorized individually; bookmarks already filed a level deeper are left untouched entirely. An options checkbox restores the previous "organize everything" behavior for anyone who wants the whole library flattened and recategorized.
