@@ -20,7 +20,14 @@ for (const browser of ["firefox", "chrome"]) {
     if (error.code !== "ENOENT") throw error;
     // Windows ships bsdtar but not `zip`. Passing explicit root entries avoids
     // the `./manifest.json` path that Firefox rejects as a missing manifest.
-    execFileSync("tar", ["-a", "-cf", zip, ...entries], { cwd: target });
+    // The archive path is passed relative to cwd because an absolute
+    // Windows path's drive-letter colon (e.g. "C:\...") is otherwise read as
+    // a remote host:path spec.
+    execFileSync(
+      "tar",
+      ["-a", "-cf", path.relative(target, zip), ...entries],
+      { cwd: target }
+    );
   }
 }
 console.log(`Built Firefox and Chrome v${version}.`);
