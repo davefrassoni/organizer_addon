@@ -84,17 +84,12 @@ function folderHostnames(node, out = new Set()) {
   else for (const child of node.children || []) folderHostnames(child, out);
   return out;
 }
-// Only direct children of a root (Bookmarks Bar / Other Bookmarks / Mobile
-// Bookmarks) are "loose" — bookmarks already filed into a user-made folder
-// are left untouched so organizing never empties folders the user built.
-// Folders that directly sit in a root and contain at least one bookmark are
-// sent and moved as a single unit (their contents move with them, intact)
-// instead of being skipped entirely or broken apart.
-// excludeFolders: when true, folders are never sent/moved as units — they
-// stay exactly where they are. organizeInsideExcluded: when also true, an
-// excluded folder's own direct bookmarks are still sent as their own batch
-// and organized into new category folders created inside that same folder,
-// without moving the folder itself or touching anything nested deeper.
+// "Loose" = direct children of a root only; bookmarks already inside a
+// user-made folder are left alone. Root-level folders move as a single
+// unit with their contents intact, never skipped or split apart.
+// excludeFolders: folders stay put, never moved as units. Add
+// organizeInsideExcluded to still sort an excluded folder's own direct
+// bookmarks in place, without moving the folder or its nested contents.
 function collectLooseBookmarks(roots, { excludeFolders = false, organizeInsideExcluded = false } = {}) {
   const out = [];
   for (const root of roots) {
@@ -123,10 +118,8 @@ function collectAllBookmarks(roots) {
   return out;
 }
 
-// Restore merges a snapshot back into the current tree instead of dumping it
-// into one synthetic wrapper folder: folders are matched by title against
-// what's already there (reused, not duplicated) and bookmarks are skipped if
-// an identical URL already exists in that same folder.
+// Restore merges into the current tree (no wrapper folder): folders match
+// by title and get reused, bookmarks skip if the same URL already exists.
 function findChildFolder(liveNode, title) { return (liveNode?.children || []).find(child => !child.url && child.title === title); }
 function findChildBookmark(liveNode, url) { return (liveNode?.children || []).find(child => child.url === url); }
 async function mergeBookmarkNodes(nodes, parentId, liveParent) {
@@ -192,9 +185,8 @@ async function daveFetch(path, options = {}) {
   try {
     return await fetch(`${DAVE_AI_ENDPOINT}${path}`, { ...options, signal: controller.signal });
   } catch (error) {
-    // Intentionally left in English: popup.js's friendlyError() matches this
-    // text against an English regex before it is ever shown to the user, and
-    // replaces it with a translated message. Never localize this string.
+    // Left in English on purpose -- popup.js regex-matches this text to show
+    // a translated message instead. Do not localize.
     if (error?.name === "AbortError") throw new Error("The Dave AI network request timed out.");
     throw error;
   } finally {
@@ -244,9 +236,8 @@ async function startDaveJob(kind, items, meta = {}) {
 async function applyBookmarkJob(jobs, job) {
   job.folderIds ||= {};
   job.skipped ||= 0;
-  // Category folders are created directly inside the bookmark's own root
-  // (the toolbar / Other Bookmarks / Mobile Bookmarks) — no intermediate
-  // "Organizer <date>" wrapper folder.
+  // Category folders go directly in the bookmark's own root -- no
+  // intermediate "Organizer <date>" wrapper folder.
   for (let position = job.applyProgress || 0; position < job.assignments.length; position++) {
     const row = job.assignments[position];
     const ref = job.refs[position];
@@ -486,8 +477,8 @@ async function organizeBookmarks() {
   let items = config.bookmarkScope === "all" ? collectAllBookmarks(roots) : collectLooseBookmarks(roots, { excludeFolders: !!config.excludeFoldersFromOrganizing, organizeInsideExcluded: !!config.organizeInsideExcludedFolders });
   if (!items.length) throw new Error(t("bgNoBookmarksToOrganize"));
   if (config.removeDuplicateBookmarks) {
-    // Folders are never candidates for duplicate removal — only the
-    // individual bookmarks sent alongside them.
+    // Folders are never duplicate candidates -- only bookmarks sent
+    // alongside them.
     const dedupable = items.filter(item => !item.isFolder);
     const untouched = items.filter(item => item.isFolder);
     const split = OrganizerCategories.splitDuplicateUrls(dedupable);
