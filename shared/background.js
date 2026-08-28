@@ -48,6 +48,7 @@ const notFoundError = error => /not found|can't find|no tab with id|no window wi
 
 function id() { return `${Date.now()}-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)}`; }
 function cleanTab(tab) { return { url: tab.url, title: tab.title || tab.url, pinned: !!tab.pinned }; }
+function jobRef(item) { return { id: item.id, rootId: item.rootId, pinned: item.pinned, parentId: item.parentId, isFolder: !!item.isFolder, title: item.title }; }
 function validTabs(tabs) { return tabs.filter(tab => ALLOWED_URL.test(tab.url || "")); }
 
 async function saveTabs(closeAfter = false) {
@@ -94,43 +95,55 @@ function collectLooseBookmarks(roots, { excludeFolders = false, organizeInsideEx
   const out = [];
   for (const root of roots) {
     for (const node of root.children || []) {
-      if (node.url && ALLOWED_URL.test(node.url)) { out.push({ id: node.id, title: node.title, url: node.url, rootId: root.id }); continue; }
+      if (node.url && ALLOWED_URL.test(node.url)) { out.push({ id: node.id, title: node.title, url: node.url, rootId: root.id, parentId: root.id }); continue; }
       if (!node.children) continue;
       if (excludeFolders) {
-        if (organizeInsideExcluded) for (const child of node.children) if (child.url && ALLOWED_URL.test(child.url)) out.push({ id: child.id, title: child.title, url: child.url, rootId: node.id });
+        if (organizeInsideExcluded) for (const child of node.children) if (child.url && ALLOWED_URL.test(child.url)) out.push({ id: child.id, title: child.title, url: child.url, rootId: node.id, parentId: node.id });
       } else if (countBookmarksIn(node) > 0) {
-        out.push({ id: node.id, title: node.title || t("bgImportedFolderTitle"), url: representativeUrl(node), rootId: root.id, isFolder: true, metaTags: Array.from(folderHostnames(node)).slice(0, 20) });
+        out.push({ id: node.id, title: node.title || t("bgImportedFolderTitle"), url: representativeUrl(node), rootId: root.id, parentId: root.id, isFolder: true, metaTags: Array.from(folderHostnames(node)).slice(0, 20) });
       }
     }
   }
   return out;
 }
-function flattenBookmarkNode(nodes, rootId, out) {
+function flattenBookmarkNode(nodes, rootId, out, parentId) {
   for (const node of nodes || []) {
-    if (node.url && ALLOWED_URL.test(node.url)) out.push({ id: node.id, title: node.title, url: node.url, rootId });
-    if (node.children) flattenBookmarkNode(node.children, rootId, out);
+    if (node.url && ALLOWED_URL.test(node.url)) out.push({ id: node.id, title: node.title, url: node.url, rootId, parentId });
+    if (node.children) flattenBookmarkNode(node.children, rootId, out, node.id);
   }
   return out;
 }
 function collectAllBookmarks(roots) {
   const out = [];
-  for (const root of roots) flattenBookmarkNode(root.children, root.id, out);
+  for (const root of roots) flattenBookmarkNode(root.children, root.id, out, root.id);
   return out;
 }
 
-// Restore merges into the current tree (no wrapper folder): folders match
-// by title and get reused, bookmarks skip if the same URL already exists.
-function findChildFolder(liveNode, title) { return (liveNode?.children || []).find(child => !child.url && child.title === title); }
-function findChildBookmark(liveNode, url) { return (liveNode?.children || []).find(child => child.url === url); }
-async function mergeBookmarkNodes(nodes, parentId, liveParent) {
+// Restore reproduces a snapshot exactly: every root the snapshot covers has
+// its current contents cleared and the saved subtree rebuilt in order, so
+// organize-time category folders, folders left empty, and duplicate bookmarks
+// are all gone afterwards. restoreBookmarkSnapshot saves a fresh backup of the
+// pre-restore tree first, so the operation stays undoable.
+function matchLiveRoot(snapshotRoot, liveRoots, index) {
+  return liveRoots.find(root => root.id === snapshotRoot.id)
+    || (snapshotRoot.title && liveRoots.find(root => root.title === snapshotRoot.title))
+    || liveRoots[index]
+    || liveRoots[liveRoots.length - 1];
+}
+async function clearBookmarkChildren(children) {
+  for (const child of children || []) {
+    try { await call(api.bookmarks, child.url ? "remove" : "removeTree", child.id); } catch (_) {}
+  }
+}
+async function recreateBookmarkNodes(nodes, parentId) {
   for (const node of nodes || []) {
-    if (node.url && ALLOWED_URL.test(node.url)) {
-      if (findChildBookmark(liveParent, node.url)) continue;
-      await call(api.bookmarks, "create", { parentId, title: node.title || node.url, url: node.url });
-    } else if (node.children) {
-      const existing = findChildFolder(liveParent, node.title || "");
-      const folder = existing || await call(api.bookmarks, "create", { parentId, title: node.title || t("bgImportedFolderTitle") });
-      await mergeBookmarkNodes(node.children, folder.id, existing || { children: [] });
+    if (node.url) {
+      if (!ALLOWED_URL.test(node.url)) continue;
+      try { await call(api.bookmarks, "create", { parentId, title: node.title || node.url, url: node.url }); } catch (_) {}
+    } else {
+      let folder;
+      try { folder = await call(api.bookmarks, "create", { parentId, title: node.title || t("bgImportedFolderTitle") }); } catch (_) { continue; }
+      await recreateBookmarkNodes(node.children, folder.id);
     }
   }
 }
@@ -138,9 +151,11 @@ async function restoreBookmarkSnapshot(item) {
   const snapshotRoots = (item.tree[0] && item.tree[0].children) || [];
   const liveRoots = await bookmarkRoots();
   if (!liveRoots.length) throw new Error(t("bgNoBookmarkRoots"));
+  await saveBookmarks();
   for (let index = 0; index < snapshotRoots.length; index++) {
-    const liveRoot = liveRoots[index] || liveRoots[liveRoots.length - 1];
-    await mergeBookmarkNodes(snapshotRoots[index].children, liveRoot.id, liveRoot);
+    const liveRoot = matchLiveRoot(snapshotRoots[index], liveRoots, index);
+    await clearBookmarkChildren(liveRoot.children);
+    await recreateBookmarkNodes(snapshotRoots[index].children, liveRoot.id);
   }
 }
 
@@ -219,7 +234,7 @@ async function startDaveJob(kind, items, meta = {}) {
       count: items.length,
       progress: { completed: 0, total: created.chunks || 1 },
       applyProgress: 0,
-      refs: items.map(item => ({ id: item.id, rootId: item.rootId, pinned: item.pinned })),
+      refs: items.map(jobRef),
       createdAt: now,
       updatedAt: now,
       expiresAt: created.expires_at || null,
@@ -233,9 +248,35 @@ async function startDaveJob(kind, items, meta = {}) {
   });
 }
 
+// Remove a folder the organize moves emptied, then its parent if that in turn
+// became empty, and so on upward. Roots (protectedIds) are never removed, and
+// bookmarks.remove refuses a non-empty folder, so this only ever deletes
+// folders left with nothing in them.
+async function pruneEmptyFolders(folderId, protectedIds) {
+  let currentId = folderId;
+  while (currentId && !protectedIds.has(currentId)) {
+    let node;
+    try { [node] = await call(api.bookmarks, "getSubTree", currentId); } catch (_) { return; }
+    if (!node || node.url || !node.children || node.children.length) return;
+    try { await call(api.bookmarks, "remove", currentId); } catch (_) { return; }
+    currentId = node.parentId;
+  }
+}
+
 async function applyBookmarkJob(jobs, job) {
   job.folderIds ||= {};
   job.skipped ||= 0;
+  // A folder sent as a unit whose assigned category is its own name already is
+  // the category folder: adopt it so sibling bookmarks merge into it, instead
+  // of creating a fresh folder and nesting the old one inside it on re-runs.
+  if (!job.foldersSeeded) {
+    job.assignments.forEach((row, position) => {
+      const ref = job.refs[position];
+      if (ref?.isFolder && ref.title && ref.title === row.category && ref.rootId) job.folderIds[`${ref.rootId}:${row.category}`] ||= ref.id;
+    });
+    job.foldersSeeded = true;
+    await saveAiJobs(jobs);
+  }
   // Category folders go directly in the bookmark's own root -- no
   // intermediate "Organizer <date>" wrapper folder.
   for (let position = job.applyProgress || 0; position < job.assignments.length; position++) {
@@ -252,13 +293,27 @@ async function applyBookmarkJob(jobs, job) {
       await saveAiJobs(jobs);
     }
     try {
-      if (ref?.id) await call(api.bookmarks, "move", ref.id, { parentId: folderId });
-      else job.skipped += 1;
+      if (!ref?.id) job.skipped += 1;
+      else if (ref.id !== folderId) await call(api.bookmarks, "move", ref.id, { parentId: folderId });
     } catch (error) {
       if (notFoundError(error)) job.skipped += 1;
       else throw error;
     }
     job.applyProgress = position + 1;
+    job.updatedAt = new Date().toISOString();
+    await saveAiJobs(jobs);
+  }
+  // Moving bookmarks out of user folders (scope "all", or organizing inside an
+  // excluded folder) can leave those folders empty -- clean them up.
+  if (!job.pruneCandidates) {
+    job.pruneCandidates = Array.from(new Set((job.refs || []).map(ref => ref?.parentId).filter(Boolean)));
+    job.pruneProtected = Array.from(new Set((job.refs || []).map(ref => ref?.rootId).filter(Boolean)));
+    await saveAiJobs(jobs);
+  }
+  const protectedIds = new Set(job.pruneProtected);
+  for (let position = job.pruneProgress || 0; position < job.pruneCandidates.length; position++) {
+    await pruneEmptyFolders(job.pruneCandidates[position], protectedIds);
+    job.pruneProgress = position + 1;
     job.updatedAt = new Date().toISOString();
     await saveAiJobs(jobs);
   }
@@ -269,6 +324,8 @@ async function applyBookmarkJob(jobs, job) {
   delete job.assignments;
   delete job.refs;
   delete job.folderIds;
+  delete job.pruneCandidates;
+  delete job.pruneProtected;
   await saveAiJobs(jobs);
 }
 
@@ -345,7 +402,7 @@ async function startLocalApplyJob(kind, items, assignments, meta = {}) {
       count: items.length,
       progress: { completed: 1, total: 1 },
       applyProgress: 0,
-      refs: items.map(item => ({ id: item.id, rootId: item.rootId, pinned: item.pinned })),
+      refs: items.map(jobRef),
       assignments,
       createdAt: now,
       updatedAt: now,
