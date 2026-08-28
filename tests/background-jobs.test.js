@@ -28,12 +28,33 @@ function backgroundHarness(shared, remoteState) {
   shared.windowSequence ||= 0;
   shared.alarms ||= {};
   let messageListener, alarmListener;
+  // A live index of every bookmark node so create/move/remove actually mutate
+  // the tree -- prune and exact-restore assertions need real emptiness.
+  const nodeById = new Map();
+  const indexNode = (node, parentId) => { node.parentId = parentId; nodeById.set(node.id, node); for (const child of node.children || []) indexNode(child, node.id); };
+  for (const root of shared.tree) indexNode(root, undefined);
+  const detach = id => { const node = nodeById.get(id); const parent = node && nodeById.get(node.parentId); if (parent) parent.children = (parent.children || []).filter(child => child.id !== id); return node; };
+  const drop = id => { const node = detach(id); if (!node) return; nodeById.delete(id); for (const child of node.children || []) drop(child.id); };
   const api = {
     bookmarks: {
       async getTree() { return shared.tree; },
-      async create(details) { const node = { id: `node-${++shared.folderSequence}`, ...details }; shared.created.push(node); return node; },
-      async move(id, details) { shared.moves.push({ id, ...details }); return { id, ...details }; },
-      async remove() {},
+      async getSubTree(id) { const node = nodeById.get(id); if (!node) throw new Error("Can't find bookmark for id."); return [node]; },
+      async create(details) {
+        const node = { id: `node-${++shared.folderSequence}`, parentId: details.parentId, title: details.title, ...(details.url ? { url: details.url } : { children: [] }) };
+        nodeById.set(node.id, node);
+        const parent = nodeById.get(details.parentId);
+        if (parent) (parent.children ||= []).push(node);
+        shared.created.push(node);
+        return node;
+      },
+      async move(id, details) {
+        shared.moves.push({ id, ...details });
+        const node = detach(id);
+        if (node) { node.parentId = details.parentId; const parent = nodeById.get(details.parentId); if (parent) (parent.children ||= []).push(node); }
+        return { id, ...details };
+      },
+      async remove(id) { (shared.removed ||= []).push(id); const node = nodeById.get(id); if (node?.children?.length) throw new Error("Can't remove non-empty folder."); drop(id); },
+      async removeTree(id) { (shared.removed ||= []).push(id); drop(id); },
     },
     tabs: {
       async query() { return shared.tabsList; },
@@ -68,7 +89,7 @@ function backgroundHarness(shared, remoteState) {
   const context = {
     browser: api,
     OrganizerCategories: {
-      assignments(items) { return items.map((_, index) => ({ index, category: "Other" })); },
+      assignments(items) { return items.map((item, index) => ({ index, category: shared.assignCategory ? shared.assignCategory(item, index) : "Other" })); },
       splitDuplicateUrls(items) { return { unique: items, duplicates: [] }; },
       async batchedAssignments(items, _size, assignBatch) { return assignBatch(items); },
     },
@@ -283,29 +304,57 @@ test("reorganizing bookmarks with scope 'all' also recategorizes bookmarks alrea
   assert.equal(result.ok, true);
   assert.equal(shared.moves.length, 1);
   assert.equal(shared.moves[0].id, "kept-1");
+  // "My Folder" is emptied by that move, so organizing removes it -- no empty
+  // folder left behind. The root is never touched.
+  assert.ok((shared.removed || []).includes("folder-a"));
+  assert.ok(!(shared.removed || []).includes("1"));
+  const bar = shared.tree[0].children.find(node => node.id === "1");
+  assert.ok(!bar.children.some(node => node.id === "folder-a"));
 });
 
-test("restoring a bookmark snapshot merges it back into the current tree instead of a wrapper folder", async () => {
-  const snapshotTree = [{
+test("re-running loose organize adopts an existing category folder instead of nesting it inside a fresh copy", async () => {
+  const tree = [{
     id: "0", title: "", children: [
-      {
-        id: "1", title: "Bookmarks Bar", children: [
-          { id: "s-folder-work", title: "Work", children: [{ id: "s-b1", title: "Docs", url: "https://example.com/docs" }] },
-          { id: "s-folder-gone", title: "Gone Folder", children: [{ id: "s-b2", title: "Gone", url: "https://example.com/gone" }] },
-          { id: "s-b3", title: "Loose", url: "https://example.com/loose" },
-        ],
-      },
+      { id: "1", title: "Bookmarks Bar", children: [
+        { id: "cat-dev", title: "Development", children: [{ id: "b1", title: "GH", url: "https://github.com/x" }] },
+        { id: "loose-1", title: "Extra", url: "https://example.com/extra" },
+      ] },
     ],
   }];
+  const shared = { storage: { organizerSettings: { method: "builtin" } }, tree, assignCategory: () => "Development" };
+  const worker = backgroundHarness(shared, {});
+  const result = await worker.message("organizeBookmarks");
+  assert.equal(result.ok, true);
+  // The existing "Development" folder is reused: it never moves, no second
+  // "Development" folder is created, and the loose bookmark merges into it.
+  assert.ok(!shared.created.some(node => node.title === "Development"));
+  assert.ok(!shared.moves.some(move => move.id === "cat-dev"));
+  assert.equal(shared.moves.find(move => move.id === "loose-1").parentId, "cat-dev");
+  assert.equal(shared.storage.organizerAiJobs.bookmarks.categories, 1);
+});
+
+test("restoring a bookmark snapshot rebuilds each root to match it exactly, leaving no organize residue", async () => {
+  const snapshotTree = [{
+    id: "0", title: "", children: [
+      { id: "s-1", title: "Bookmarks Bar", children: [
+        { id: "s-folder-work", title: "Work", children: [{ id: "s-b1", title: "Docs", url: "https://example.com/docs" }] },
+        { id: "s-b3", title: "Loose", url: "https://example.com/loose" },
+      ] },
+      { id: "s-2", title: "Other Bookmarks", children: [] },
+    ],
+  }];
+  // The live tree looks like the snapshot was organized: a "Development"
+  // category folder holds the moved bookmarks, and "Work" was left empty.
   const liveTree = [{
     id: "0", title: "", children: [
-      {
-        id: "live-1", title: "Bookmarks Bar", children: [
-          { id: "live-folder-work", title: "Work", children: [] },
-          { id: "live-existing", title: "Docs", url: "https://example.com/docs" },
+      { id: "1", title: "Bookmarks Bar", children: [
+        { id: "live-cat", title: "Development", children: [
+          { id: "live-docs", title: "Docs", url: "https://example.com/docs" },
           { id: "live-loose", title: "Loose", url: "https://example.com/loose" },
-        ],
-      },
+        ] },
+        { id: "live-empty", title: "Work", children: [] },
+      ] },
+      { id: "2", title: "Other Bookmarks", children: [] },
     ],
   }];
   const shared = {
@@ -316,23 +365,15 @@ test("restoring a bookmark snapshot merges it back into the current tree instead
   const result = await worker.message("restoreBookmarks", { id: "backup-1" });
   assert.equal(result.ok, true);
 
-  // No synthetic "<name> restored" wrapper folder is ever created.
-  assert.ok(!shared.created.some(node => /restored/i.test(node.title || "")));
-  // "Docs" is restored inside "Work" (where the snapshot had it) since the
-  // live "Work" folder doesn't already contain it — dedupe is scoped per
-  // folder, not global, so the same URL sitting loose elsewhere doesn't block it.
-  const createdDocs = shared.created.filter(node => node.url === "https://example.com/docs");
-  assert.equal(createdDocs.length, 1);
-  assert.equal(createdDocs[0].parentId, "live-folder-work");
-  // "Work" already exists (matched by title) and is reused, not recreated.
-  assert.ok(!shared.created.some(node => node.title === "Work"));
-  // "Gone Folder" no longer exists live, so it is recreated directly under
-  // the matched live root, and its bookmark restored inside it.
-  const goneFolder = shared.created.find(node => node.title === "Gone Folder");
-  assert.ok(goneFolder);
-  assert.equal(goneFolder.parentId, "live-1");
-  assert.ok(shared.created.some(node => node.url === "https://example.com/gone" && node.parentId === goneFolder.id));
-  // "Loose" already exists directly under the same live root with the same
-  // URL, so restoring it again does not create a duplicate.
-  assert.ok(!shared.created.some(node => node.url === "https://example.com/loose"));
+  // A safety backup of the pre-restore tree is saved before anything changes.
+  assert.equal(shared.storage.bookmarkBackups.length, 2);
+
+  // Root "1" now matches the snapshot exactly: "Work" > "Docs", then "Loose".
+  const bar = shared.tree[0].children.find(node => node.id === "1");
+  assert.deepEqual(bar.children.map(node => node.title), ["Work", "Loose"]);
+  assert.equal(bar.children[0].url, undefined);
+  assert.deepEqual(bar.children[0].children.map(node => node.url), ["https://example.com/docs"]);
+  assert.equal(bar.children[1].url, "https://example.com/loose");
+  // The "Development" category folder and the duplicate bookmarks are gone.
+  assert.ok(!JSON.stringify(shared.tree).includes("Development"));
 });
