@@ -489,6 +489,21 @@ test("organizing bookmarks stashes the old layout in a \"backup\" folder in the 
   assert.ok(!bar.children.find(node => node.title === "backup").children.some(stamp => (stamp.children || []).some(node => node.title === "backup")));
 });
 
+test("the backup folder lands in the toolbar, not Firefox's hidden Bookmarks Menu", async () => {
+  const tree = [{ id: "root________", title: "", children: [
+    { id: "menu________", title: "Bookmarks Menu", children: [] },
+    { id: "toolbar_____", title: "Bookmarks Toolbar", children: [{ id: "b0", title: "GitHub", url: "https://github.com/a" }] },
+    { id: "unfiled_____", title: "Other Bookmarks", children: [] },
+  ] }];
+  const shared = { storage: { organizerSettings: { method: "builtin" } }, tree, assignCategory: () => "Stuff" };
+  const worker = backgroundHarness(shared, {});
+  await worker.message("organizeBookmarks");
+  const menu = shared.tree[0].children.find(node => node.id === "menu________");
+  const toolbar = shared.tree[0].children.find(node => node.id === "toolbar_____");
+  assert.ok(!menu.children.some(node => node.title === "backup"), "not put in the often-hidden Bookmarks Menu");
+  assert.ok(toolbar.children.some(node => node.title === "backup" && !node.url), "put in the visible toolbar");
+});
+
 test("keepBackupFolder off skips the visible backup folder", async () => {
   const tree = [{ id: "0", title: "", children: [
     { id: "1", title: "Bookmarks Bar", children: [{ id: "b0", title: "GitHub", url: "https://github.com/a" }] },

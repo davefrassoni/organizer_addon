@@ -211,15 +211,25 @@ async function restoreBookmarkSnapshot(item) {
   }
 }
 
-// Copies the pre-organize tree into "<first root>/backup/<timestamp>/" so the
-// old arrangement stays browsable in the bookmark manager. `roots` must be the
+// The root the backup folder goes in: the toolbar/bookmarks bar if we can
+// find it (it's the one people actually see -- Firefox's first root is the
+// often-hidden Bookmarks Menu), otherwise the first root that has bookmarks,
+// otherwise the first root.
+function backupHostRoot(roots) {
+  return roots.find(root => root.id === "1" || root.id === "toolbar_____" || /toolbar|bookmarks bar|barra|lesezeichen-symbolleiste/i.test(root.title || ""))
+    || roots.find(root => (root.children || []).some(node => !isBackupFolder(node)))
+    || roots[0];
+}
+// Copies the pre-organize tree into "<toolbar>/backup/<timestamp>/" so the old
+// arrangement stays browsable in the bookmark manager. `roots` must be the
 // tree read before this runs, so the new backup folder isn't copied into
 // itself. Any earlier backup folder is left out of the copy.
 async function stashVisibleBackup(roots) {
-  const firstRoot = roots[0];
-  if (!firstRoot) return;
-  const existing = (firstRoot.children || []).find(isBackupFolder);
-  const backupFolder = existing || await call(api.bookmarks, "create", { parentId: firstRoot.id, title: BACKUP_FOLDER_NAME });
+  const host = backupHostRoot(roots);
+  if (!host) return;
+  const existing = (host.children || []).find(isBackupFolder);
+  // index 0 keeps it at the top of the toolbar so it's easy to find.
+  const backupFolder = existing || await call(api.bookmarks, "create", { parentId: host.id, title: BACKUP_FOLDER_NAME, index: 0 });
   const stamp = await call(api.bookmarks, "create", { parentId: backupFolder.id, title: new Date().toLocaleString() });
   const multiRoot = roots.filter(root => (root.children || []).some(node => !isBackupFolder(node))).length > 1;
   for (const root of roots) {
