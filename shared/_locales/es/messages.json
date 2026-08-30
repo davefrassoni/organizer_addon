@@ -529,5 +529,14 @@
   },
   "keepBackupFolderNote": {
     "message": "Antes de organizar los marcadores, copia la disposición actual en una carpeta con fecha dentro de \"backup\" en tu primera raíz de marcadores. Desactívalo si tienes muchísimos marcadores."
+  },
+  "settingsGroupGeneral": {
+    "message": "General"
+  },
+  "settingsGroupTabs": {
+    "message": "Pestañas"
+  },
+  "settingsGroupBookmarks": {
+    "message": "Marcadores"
   }
 }

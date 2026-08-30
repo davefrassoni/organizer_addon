@@ -529,5 +529,14 @@
   },
   "keepBackupFolderNote": {
     "message": "Prima di organizzare i segnalibri, copia la disposizione attuale in una cartella con data dentro \"backup\" nella tua prima radice dei segnalibri. Disattiva per raccolte molto grandi."
+  },
+  "settingsGroupGeneral": {
+    "message": "Generale"
+  },
+  "settingsGroupTabs": {
+    "message": "Schede"
+  },
+  "settingsGroupBookmarks": {
+    "message": "Segnalibri"
   }
 }
