@@ -8,6 +8,11 @@ let job = null;
 let view = "category";
 let timer = null;
 let busy = false;
+// Categories the user has expanded, so a re-render (or a poll) doesn't
+// collapse them again.
+const openCategories = new Set();
+let userToggledCategory = false;
+let resultsKey = null;
 
 function message(action, extra = {}) {
   if (globalThis.browser) return api.runtime.sendMessage({ action, ...extra });
@@ -31,7 +36,10 @@ async function refresh() {
   try { response = await message("aiJobDetail", { kind, id: job && job.id }); }
   catch (_) { return schedule(); }
   const next = response && response.ok ? response.result : null;
-  if (next) { job = next; kind = job.kind; $("#cleared").hidden = true; render(); }
+  if (next) {
+    if (!job || job.id !== next.id) { openCategories.clear(); userToggledCategory = false; resultsKey = null; }
+    job = next; kind = job.kind; $("#cleared").hidden = true; render();
+  }
   else if (job) { $("#cleared").hidden = false; }
   else { $("#empty").hidden = false; $("#job").hidden = true; }
   schedule();
@@ -111,15 +119,6 @@ function renderBatches() {
   list.replaceChildren(...rows);
 }
 
-function whyText(assignment, item) {
-  if (assignment && assignment.reason) return assignment.reason;
-  const why = item && item.why;
-  if (!why) return "";
-  if (why.signal === "keyword" && why.terms && why.terms.length) return t("activityWhyMatched", [why.terms.join(", ")]);
-  if (why.signal === "topSite") return t("activityWhyPopular");
-  return "";
-}
-
 function itemLabel(item, fallbackIndex) {
   if (!item) return t("activityItemGone", [String(fallbackIndex + 1)]);
   return item.title || host(item.url) || item.url || "—";
@@ -127,13 +126,19 @@ function itemLabel(item, fallbackIndex) {
 
 function renderResults() {
   const results = $("#results");
-  const explain = job.explain;
-  if (!explain || !job.assignments) { results.hidden = true; return; }
+  if (!job.explain || !job.assignments) { results.hidden = true; return; }
   results.hidden = false;
 
-  $("#explain-text").textContent = explain.source === "builtin" ? t("activityExplainBuiltin")
-    : explain.source === "provider" ? t("activityExplainProvider")
-    : t("activityExplainInferred");
+  $("#by-category").hidden = view !== "category";
+  $(".table-wrap").hidden = view !== "list";
+  $("#view-category").classList.toggle("active", view === "category");
+  $("#view-list").classList.toggle("active", view === "list");
+
+  // Only rebuild the (potentially large) result lists when the data or view
+  // actually changed -- otherwise a poll would collapse open categories.
+  const key = `${job.id}|${job.updatedAt}`;
+  if (key === resultsKey) return;
+  resultsKey = key;
 
   const detail = job.detail || { items: [], total: job.count || 0, truncated: false };
   $("#truncated").hidden = !detail.truncated;
@@ -144,16 +149,19 @@ function renderResults() {
     if (!byCategory.has(assignment.category)) byCategory.set(assignment.category, []);
     byCategory.get(assignment.category).push(assignment);
   });
-  const digest = new Map((explain.categories || []).map(entry => [entry.name, entry]));
-  const inferred = explain.source === "inferred";
+  const digest = new Map((job.explain.categories || []).map(entry => [entry.name, entry]));
+  const autoOpen = byCategory.size <= 4;
 
-  const container = $("#by-category");
-  container.replaceChildren(...Array.from(byCategory.entries())
+  $("#by-category").replaceChildren(...Array.from(byCategory.entries())
     .sort((a, b) => b[1].length - a[1].length)
     .map(([name, rows]) => {
       const box = document.createElement("details");
       box.className = "cat";
-      if (byCategory.size <= 4) box.open = true;
+      box.open = openCategories.has(name) || (autoOpen && !userToggledCategory);
+      box.addEventListener("toggle", () => {
+        userToggledCategory = true;
+        box.open ? openCategories.add(name) : openCategories.delete(name);
+      });
       const summary = document.createElement("summary");
       const strong = document.createElement("strong");
       strong.textContent = name;
@@ -161,15 +169,14 @@ function renderResults() {
       count.className = "count";
       count.textContent = String(rows.length);
       summary.append(strong, count);
-      if (inferred) { const chip = document.createElement("span"); chip.className = "chip"; chip.textContent = t("activityInferredChip"); summary.append(chip); }
       box.append(summary);
 
       const entry = digest.get(name);
       if (entry && entry.domains && entry.domains.length) {
-        const why = document.createElement("p");
-        why.className = "cat-why";
-        why.textContent = t("activityCommonSites", [entry.domains.slice(0, 4).join(", ")]);
-        box.append(why);
+        const sites = document.createElement("p");
+        sites.className = "cat-why";
+        sites.textContent = t("activityCommonSites", [entry.domains.slice(0, 4).join(", ")]);
+        box.append(sites);
       }
 
       const ul = document.createElement("ul");
@@ -180,36 +187,25 @@ function renderResults() {
         const main = document.createElement("span");
         main.textContent = itemLabel(item, assignment.index);
         li.append(main);
-        const bits = [item && host(item.url), whyText(assignment, item)].filter(Boolean);
-        if (bits.length) { const sub = document.createElement("span"); sub.className = "sub"; sub.textContent = bits.join(" — "); li.append(sub); }
+        const site = item && host(item.url);
+        if (site) { const sub = document.createElement("span"); sub.className = "sub"; sub.textContent = site; li.append(sub); }
         ul.append(li);
       });
       box.append(ul);
       return box;
     }));
 
-  const body = $("#full-list tbody");
-  body.replaceChildren(...detail.items.map((item, index) => {
-    const assignment = job.assignments[index] || {};
+  $("#full-list tbody").replaceChildren(...detail.items.map((item, index) => {
     const tr = document.createElement("tr");
     const itemCell = document.createElement("td");
     itemCell.textContent = itemLabel(item, index);
-    const sub = document.createElement("span");
-    sub.className = "sub";
-    sub.textContent = host(item.url);
-    if (sub.textContent) itemCell.append(sub);
+    const site = host(item.url);
+    if (site) { const sub = document.createElement("span"); sub.className = "sub"; sub.textContent = site; itemCell.append(sub); }
     const categoryCell = document.createElement("td");
-    categoryCell.textContent = assignment.category || "—";
-    const whyCell = document.createElement("td");
-    whyCell.textContent = whyText(assignment, item);
-    tr.append(itemCell, categoryCell, whyCell);
+    categoryCell.textContent = (job.assignments[index] || {}).category || "—";
+    tr.append(itemCell, categoryCell);
     return tr;
   }));
-
-  $("#by-category").hidden = view !== "category";
-  $(".table-wrap").hidden = view !== "list";
-  $("#view-category").classList.toggle("active", view === "category");
-  $("#view-list").classList.toggle("active", view === "list");
 }
 
 function render() {
@@ -251,4 +247,4 @@ if (api.storage && api.storage.onChanged) {
 }
 
 OrganizerI18n.apply();
-refresh();
+OrganizerI18n.init().then(() => { OrganizerI18n.apply(); refresh(); });

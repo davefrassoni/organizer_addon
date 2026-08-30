@@ -34,6 +34,17 @@ test("an AI job opens a live activity page with per-item results, retry and undo
   assert.match(fs.readFileSync("shared/popup/popup.js", "utf8"), /activity\/activity\.html/);
   assert.match(fs.readFileSync("shared/options/options.html", "utf8"), /id="open-activity"/);
 });
+test("the settings page has a language selector that can override the browser locale", () => {
+  const options = fs.readFileSync("shared/options/options.html", "utf8");
+  assert.match(options, /id="ui-language"/);
+  assert.match(options, /<option value="auto"/);
+  for (const code of ["en", "es", "fr", "de", "pt", "it"]) assert.match(options, new RegExp(`<option value="${code}"`));
+  const i18n = fs.readFileSync("shared/i18n.js", "utf8");
+  assert.match(i18n, /uiLanguage/);
+  assert.match(i18n, /_locales\/\$\{lang\}\/messages\.json/);
+  assert.match(i18n, /async function init/);
+  for (const page of ["shared/options/options.js", "shared/popup/popup.js", "shared/activity/activity.js"]) assert.match(fs.readFileSync(page, "utf8"), /OrganizerI18n\.init\(\)/, `${page} must await the i18n init`);
+});
 test("generated offline catalog contains ten thousand unique domains", () => { require("../shared/top-sites.js"); assert.equal(globalThis.OrganizerTopSites.length, 10000); assert.equal(new Set(globalThis.OrganizerTopSites).size, 10000); });
 test("popup translates browser restart and AI timeout errors", () => { const popup = fs.readFileSync("shared/popup/popup.js", "utf8"); assert.match(popup, /receiving end does not exist/i); assert.match(popup, /errorBackgroundRestarted/); assert.match(enMessages.errorBackgroundRestarted.message, /background process restarted/); assert.match(enMessages.errorBackgroundRestarted.message, /saved AI job and its latest progress/); assert.match(enMessages.errorAiTimeoutFriendly.message, /taking longer than expected/); assert.match(enMessages.bgAiTimedOut.message, /AI request timed out before every processing batch finished/); });
 test("build packages explicit root entries so manifest.json is at the ZIP root", () => { const build = fs.readFileSync("scripts/build.js", "utf8"); assert.match(build, /const entries = fs\.readdirSync\(target\)/); assert.doesNotMatch(build, /\["-qr", zip, "\."\]/); assert.doesNotMatch(build, /\["-a", "-cf", zip, "\."\]/); });

@@ -494,32 +494,11 @@
   "activityColCategory": {
     "message": "Category"
   },
-  "activityColWhy": {
-    "message": "Why"
-  },
-  "activityInferredChip": {
-    "message": "inferred"
-  },
   "activityCommonSites": {
     "message": "Common sites: $1"
   },
   "activityTruncated": {
     "message": "Showing the first $1 of $2 items."
-  },
-  "activityExplainInferred": {
-    "message": "The AI returns categories only, not its reasoning. Organizer summarizes each group from the sites and words its items share, so the “why” below is inferred."
-  },
-  "activityExplainBuiltin": {
-    "message": "Each item was categorized on your device by matching its address, title and page keywords against the built-in catalog."
-  },
-  "activityExplainProvider": {
-    "message": "The reason shown for each item was returned by your AI provider."
-  },
-  "activityWhyMatched": {
-    "message": "Matched $1"
-  },
-  "activityWhyPopular": {
-    "message": "Recognized popular site"
   },
   "activityItemGone": {
     "message": "Item $1 (no longer available)"
@@ -535,5 +514,11 @@
   },
   "bgUndoUnavailable": {
     "message": "This organization can't be undone."
+  },
+  "languageLabel": {
+    "message": "Language"
+  },
+  "languageAuto": {
+    "message": "Automatic (browser language)"
   }
 }

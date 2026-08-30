@@ -494,32 +494,11 @@
   "activityColCategory": {
     "message": "Categoría"
   },
-  "activityColWhy": {
-    "message": "Por qué"
-  },
-  "activityInferredChip": {
-    "message": "inferido"
-  },
   "activityCommonSites": {
     "message": "Sitios frecuentes: $1"
   },
   "activityTruncated": {
     "message": "Mostrando los primeros $1 de $2 elementos."
-  },
-  "activityExplainInferred": {
-    "message": "La IA solo devuelve categorías, no su razonamiento. Organizer resume cada grupo a partir de los sitios y palabras que comparten sus elementos, así que el “por qué” de abajo es inferido."
-  },
-  "activityExplainBuiltin": {
-    "message": "Cada elemento se clasificó en tu dispositivo comparando su dirección, título y palabras clave de la página con el catálogo integrado."
-  },
-  "activityExplainProvider": {
-    "message": "El motivo mostrado para cada elemento lo devolvió tu proveedor de IA."
-  },
-  "activityWhyMatched": {
-    "message": "Coincidió con $1"
-  },
-  "activityWhyPopular": {
-    "message": "Sitio popular reconocido"
   },
   "activityItemGone": {
     "message": "Elemento $1 (ya no disponible)"
@@ -535,5 +514,11 @@
   },
   "bgUndoUnavailable": {
     "message": "Esta organización no se puede deshacer."
+  },
+  "languageLabel": {
+    "message": "Idioma"
+  },
+  "languageAuto": {
+    "message": "Automático (idioma del navegador)"
   }
 }
