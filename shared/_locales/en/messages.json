@@ -400,5 +400,140 @@
   },
   "organizeInsideExcludedNote": {
     "message": "Sorts each folder's own bookmarks into new category folders created inside it, as their own batch, without moving the folder itself."
+  },
+  "activityTitle": {
+    "message": "AI activity"
+  },
+  "activityHeading": {
+    "message": "AI activity"
+  },
+  "activityLead": {
+    "message": "Live detail of what the AI is doing with your tabs and bookmarks."
+  },
+  "activitySettingsLink": {
+    "message": "Organization settings"
+  },
+  "activityNoJob": {
+    "message": "No AI job yet. Organize tabs or bookmarks and the live detail appears here."
+  },
+  "activityCleared": {
+    "message": "This job finished and was cleared from the popup. The detail below is the last snapshot."
+  },
+  "activityMethod": {
+    "message": "Method"
+  },
+  "activityProvider": {
+    "message": "Provider"
+  },
+  "activityStarted": {
+    "message": "Started"
+  },
+  "activityUpdated": {
+    "message": "Updated"
+  },
+  "activityItemsCount": {
+    "message": "$1 $2"
+  },
+  "activityStateQueued": {
+    "message": "Queued"
+  },
+  "activityStateProcessing": {
+    "message": "Processing"
+  },
+  "activityStateApplying": {
+    "message": "Applying"
+  },
+  "activityStateCompleted": {
+    "message": "Completed"
+  },
+  "activityRetryButton": {
+    "message": "Retry"
+  },
+  "activityUndoButton": {
+    "message": "Undo"
+  },
+  "activityRetryStarted": {
+    "message": "Retry started."
+  },
+  "activityUndoConfirm": {
+    "message": "Undo this organization and restore what changed?"
+  },
+  "activityUndoneBookmarks": {
+    "message": "Bookmarks restored to the backup taken before organizing."
+  },
+  "activityUndoneTabs": {
+    "message": "Tabs returned to their previous order and ungrouped."
+  },
+  "activityBatchesHeading": {
+    "message": "Sections sent to the AI"
+  },
+  "activityBatch": {
+    "message": "Section $1"
+  },
+  "activityBatchDone": {
+    "message": "Sent"
+  },
+  "activityBatchActive": {
+    "message": "Sending…"
+  },
+  "activityBatchWaiting": {
+    "message": "Waiting"
+  },
+  "activityResultsHeading": {
+    "message": "Results"
+  },
+  "activityViewByCategory": {
+    "message": "By category"
+  },
+  "activityViewFullList": {
+    "message": "Full list"
+  },
+  "activityColItem": {
+    "message": "Item"
+  },
+  "activityColCategory": {
+    "message": "Category"
+  },
+  "activityColWhy": {
+    "message": "Why"
+  },
+  "activityInferredChip": {
+    "message": "inferred"
+  },
+  "activityCommonSites": {
+    "message": "Common sites: $1"
+  },
+  "activityTruncated": {
+    "message": "Showing the first $1 of $2 items."
+  },
+  "activityExplainInferred": {
+    "message": "The AI returns categories only, not its reasoning. Organizer summarizes each group from the sites and words its items share, so the “why” below is inferred."
+  },
+  "activityExplainBuiltin": {
+    "message": "Each item was categorized on your device by matching its address, title and page keywords against the built-in catalog."
+  },
+  "activityExplainProvider": {
+    "message": "The reason shown for each item was returned by your AI provider."
+  },
+  "activityWhyMatched": {
+    "message": "Matched $1"
+  },
+  "activityWhyPopular": {
+    "message": "Recognized popular site"
+  },
+  "activityItemGone": {
+    "message": "Item $1 (no longer available)"
+  },
+  "openActivityLabel": {
+    "message": "Show the AI activity page automatically"
+  },
+  "openActivityNote": {
+    "message": "When you organize with AI, open a tab with per-section progress, the category chosen for every item, and an explanation of the grouping. You can also open it from the popup."
+  },
+  "viewAiDetailButton": {
+    "message": "View AI detail"
+  },
+  "bgUndoUnavailable": {
+    "message": "This organization can't be undone."
   }
 }

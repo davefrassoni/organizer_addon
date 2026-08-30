@@ -400,5 +400,140 @@
   },
   "organizeInsideExcludedNote": {
     "message": "Ordina i segnalibri di ciascuna cartella in nuove cartelle di categoria create al suo interno, come un proprio lotto, senza spostare la cartella stessa."
+  },
+  "activityTitle": {
+    "message": "Attività IA"
+  },
+  "activityHeading": {
+    "message": "Attività IA"
+  },
+  "activityLead": {
+    "message": "Dettaglio in tempo reale di ciò che l’IA sta facendo con schede e segnalibri."
+  },
+  "activitySettingsLink": {
+    "message": "Impostazioni di organizzazione"
+  },
+  "activityNoJob": {
+    "message": "Nessuna attività IA per ora. Organizza schede o segnalibri e il dettaglio apparirà qui."
+  },
+  "activityCleared": {
+    "message": "Questa attività è terminata ed è stata rimossa dal popup. Il dettaglio qui sotto è l’ultima istantanea."
+  },
+  "activityMethod": {
+    "message": "Metodo"
+  },
+  "activityProvider": {
+    "message": "Provider"
+  },
+  "activityStarted": {
+    "message": "Avviato"
+  },
+  "activityUpdated": {
+    "message": "Aggiornato"
+  },
+  "activityItemsCount": {
+    "message": "$1 $2"
+  },
+  "activityStateQueued": {
+    "message": "In coda"
+  },
+  "activityStateProcessing": {
+    "message": "Elaborazione"
+  },
+  "activityStateApplying": {
+    "message": "Applicazione"
+  },
+  "activityStateCompleted": {
+    "message": "Completato"
+  },
+  "activityRetryButton": {
+    "message": "Riprova"
+  },
+  "activityUndoButton": {
+    "message": "Annulla"
+  },
+  "activityRetryStarted": {
+    "message": "Nuovo tentativo avviato."
+  },
+  "activityUndoConfirm": {
+    "message": "Annullare questa organizzazione e ripristinare ciò che è cambiato?"
+  },
+  "activityUndoneBookmarks": {
+    "message": "Segnalibri ripristinati al backup creato prima di organizzare."
+  },
+  "activityUndoneTabs": {
+    "message": "Schede riportate all’ordine precedente e separate dai gruppi."
+  },
+  "activityBatchesHeading": {
+    "message": "Sezioni inviate all’IA"
+  },
+  "activityBatch": {
+    "message": "Sezione $1"
+  },
+  "activityBatchDone": {
+    "message": "Inviata"
+  },
+  "activityBatchActive": {
+    "message": "Invio…"
+  },
+  "activityBatchWaiting": {
+    "message": "In attesa"
+  },
+  "activityResultsHeading": {
+    "message": "Risultati"
+  },
+  "activityViewByCategory": {
+    "message": "Per categoria"
+  },
+  "activityViewFullList": {
+    "message": "Elenco completo"
+  },
+  "activityColItem": {
+    "message": "Elemento"
+  },
+  "activityColCategory": {
+    "message": "Categoria"
+  },
+  "activityColWhy": {
+    "message": "Perché"
+  },
+  "activityInferredChip": {
+    "message": "dedotto"
+  },
+  "activityCommonSites": {
+    "message": "Siti frequenti: $1"
+  },
+  "activityTruncated": {
+    "message": "Vengono mostrati i primi $1 di $2 elementi."
+  },
+  "activityExplainInferred": {
+    "message": "L’IA restituisce solo le categorie, non il suo ragionamento. Organizer riassume ogni gruppo dai siti e dalle parole in comune tra i suoi elementi, quindi il “perché” qui sotto è dedotto."
+  },
+  "activityExplainBuiltin": {
+    "message": "Ogni elemento è stato classificato sul tuo dispositivo confrontando indirizzo, titolo e parole chiave della pagina con il catalogo integrato."
+  },
+  "activityExplainProvider": {
+    "message": "Il motivo mostrato per ogni elemento è stato restituito dal tuo provider di IA."
+  },
+  "activityWhyMatched": {
+    "message": "Corrisponde a $1"
+  },
+  "activityWhyPopular": {
+    "message": "Sito popolare riconosciuto"
+  },
+  "activityItemGone": {
+    "message": "Elemento $1 (non più disponibile)"
+  },
+  "openActivityLabel": {
+    "message": "Mostra automaticamente la pagina di attività IA"
+  },
+  "openActivityNote": {
+    "message": "Quando organizzi con l’IA, apre una scheda con l’avanzamento per sezione, la categoria scelta per ogni elemento e una spiegazione del raggruppamento. Puoi aprirla anche dal popup."
+  },
+  "viewAiDetailButton": {
+    "message": "Vedi dettaglio IA"
+  },
+  "bgUndoUnavailable": {
+    "message": "Questa organizzazione non può essere annullata."
   }
 }

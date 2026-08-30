@@ -5,6 +5,7 @@ const vm = require("node:vm");
 
 const backgroundSource = fs.readFileSync("shared/background.js", "utf8");
 const enMessages = JSON.parse(fs.readFileSync("shared/_locales/en/messages.json", "utf8"));
+const RealCategories = require("../shared/categories.js");
 
 function response(body, status = 200) {
   return { ok: status >= 200 && status < 300, status, json: async () => body };
@@ -57,7 +58,7 @@ function backgroundHarness(shared, remoteState) {
       async removeTree(id) { (shared.removed ||= []).push(id); drop(id); },
     },
     tabs: {
-      async query() { return shared.tabsList; },
+      async query(details = {}) { return details.url ? (shared.activityTabs || []) : shared.tabsList; },
       async group(details) {
         if (details.groupId != null) { shared.groups[details.groupId].push(...details.tabIds); return details.groupId; }
         const groupId = `group-${++shared.groupSequence}`;
@@ -65,10 +66,13 @@ function backgroundHarness(shared, remoteState) {
         return groupId;
       },
       async move(id, details) { shared.tabMoves.push({ id, ...details }); return { id, ...details }; },
+      async ungroup(ids) { (shared.ungrouped ||= []).push(...ids); },
+      async create(details) { (shared.tabsCreated ||= []).push(details); return { id: 9000 + shared.tabsCreated.length, ...details }; },
+      async update(id, details) { (shared.tabUpdates ||= []).push({ id, ...details }); return { id, ...details }; },
       async remove() {},
     },
     tabGroups: { async update(groupId, details) { shared.groupTitles[groupId] = details.title; } },
-    windows: { async create(details) { const win = { id: `win-${++shared.windowSequence}`, ...details }; shared.windowsCreated.push(win); return win; } },
+    windows: { async create(details) { const win = { id: `win-${++shared.windowSequence}`, ...details }; shared.windowsCreated.push(win); return win; }, async update() {} },
     storage: { local: {
       async get(defaults) { return { ...defaults, ...shared.storage }; },
       async set(values) { Object.assign(shared.storage, structuredClone(values)); },
@@ -81,6 +85,7 @@ function backgroundHarness(shared, remoteState) {
     i18n: { getMessage(key, subs) { const entry = enMessages[key]; if (!entry) return key; const list = subs == null ? [] : Array.isArray(subs) ? subs : [subs]; return entry.message.replace(/\$(\d+)/g, (_, n) => list[Number(n) - 1] ?? ""); } },
     runtime: {
       lastError: null,
+      getURL(path) { return `chrome-extension://test/${path}`; },
       onMessage: { addListener(listener) { messageListener = listener; } },
       onStartup: { addListener() {} },
       onInstalled: { addListener() {} },
@@ -89,6 +94,7 @@ function backgroundHarness(shared, remoteState) {
   const context = {
     browser: api,
     OrganizerCategories: {
+      ...RealCategories,
       assignments(items) { return items.map((item, index) => ({ index, category: shared.assignCategory ? shared.assignCategory(item, index) : "Other" })); },
       splitDuplicateUrls(items) { return { unique: items, duplicates: [] }; },
       async batchedAssignments(items, _size, assignBatch) { return assignBatch(items); },
@@ -376,4 +382,95 @@ test("restoring a bookmark snapshot rebuilds each root to match it exactly, leav
   assert.equal(bar.children[1].url, "https://example.com/loose");
   // The "Development" category folder and the duplicate bookmarks are gone.
   assert.ok(!JSON.stringify(shared.tree).includes("Development"));
+});
+
+test("the activity detail exposes per-item categories and an inferred explanation for a Dave job", async () => {
+  const bookmarks = [
+    { id: "b0", title: "GitHub", url: "https://github.com/a" },
+    { id: "b1", title: "GitLab", url: "https://gitlab.com/b" },
+    { id: "b2", title: "YouTube", url: "https://youtube.com/c" },
+  ];
+  const shared = { storage: { organizerSettings: { method: "ai", provider: "dave" } }, bookmarks };
+  const remote = { status: "queued", progress: { completed: 0, total: 6 }, assignments: [
+    { index: 0, category: "Development" }, { index: 1, category: "Development" }, { index: 2, category: "Video" },
+  ] };
+  const first = backgroundHarness(shared, remote);
+  await first.message("organizeBookmarks");
+  // The activity tab opens automatically when the job starts.
+  assert.equal((shared.tabsCreated || []).length, 1);
+  assert.match(shared.tabsCreated[0].url, /activity\/activity\.html\?kind=bookmarks/);
+
+  remote.status = "completed";
+  const second = backgroundHarness(shared, remote);
+  second.alarm();
+  await waitFor(() => shared.storage.organizerAiJobs.bookmarks?.state === "completed");
+
+  const res = await second.message("aiJobDetail", { kind: "bookmarks" });
+  assert.equal(res.ok, true);
+  const job = res.result;
+  assert.equal(job.method, "ai");
+  assert.equal(job.provider, "dave");
+  assert.equal(job.detail.items.length, 3);
+  assert.equal(job.assignments[0].category, "Development");
+  assert.equal(job.explain.source, "inferred");
+  const dev = job.explain.categories.find(entry => entry.name === "Development");
+  assert.equal(dev.count, 2);
+  assert.deepEqual(dev.domains.sort(), ["github.com", "gitlab.com"]);
+  assert.equal(job.canUndo, true);
+});
+
+test("a built-in job records a local reason for every item", async () => {
+  const shared = { storage: { organizerSettings: { method: "builtin" } }, bookmarks: [
+    { id: "b0", title: "Repo", url: "https://github.com/a" },
+  ] };
+  const worker = backgroundHarness(shared, {});
+  await worker.message("organizeBookmarks");
+  const res = await worker.message("aiJobDetail", { kind: "bookmarks" });
+  assert.equal(res.result.explain.source, "builtin");
+  assert.equal(res.result.detail.items[0].why.signal, "keyword");
+  assert.ok(res.result.detail.items[0].why.terms.includes("github"));
+});
+
+test("retrying a finished job runs a fresh organize for the same kind", async () => {
+  const shared = { storage: { organizerSettings: { method: "builtin" } }, bookmarks: [{ id: "b0", title: "X", url: "https://x.com/a" }] };
+  const worker = backgroundHarness(shared, {});
+  await worker.message("organizeBookmarks");
+  const firstId = shared.storage.organizerAiJobs.bookmarks.id;
+  const backupsBefore = shared.storage.bookmarkBackups.length;
+
+  const res = await worker.message("retryAiJob", { id: firstId });
+  assert.equal(res.ok, true);
+  assert.equal(res.result.pending, false);
+  assert.equal(res.result.job.state, "completed");
+  // A fresh organize means a fresh safety backup was taken first.
+  assert.equal(shared.storage.bookmarkBackups.length, backupsBefore + 1);
+});
+
+test("undo restores the pre-organize backup for a completed bookmark job", async () => {
+  const tree = [{ id: "0", title: "", children: [
+    { id: "1", title: "Bookmarks Bar", children: [
+      { id: "b0", title: "GitHub", url: "https://github.com/a" },
+      { id: "b1", title: "News", url: "https://bbc.com/x" },
+    ] },
+  ] }];
+  const shared = { storage: { organizerSettings: { method: "builtin" } }, tree, assignCategory: () => "Stuff" };
+  const worker = backgroundHarness(shared, {});
+  await worker.message("organizeBookmarks");
+  const bar = shared.tree[0].children.find(node => node.id === "1");
+  assert.ok(bar.children.some(node => node.title === "Stuff"));
+
+  const jobId = shared.storage.organizerAiJobs.bookmarks.id;
+  const res = await worker.message("undoAiJob", { id: jobId });
+  assert.equal(res.ok, true);
+  assert.equal(res.result.undone, "bookmarks");
+  const restored = shared.tree[0].children.find(node => node.id === "1");
+  assert.deepEqual(restored.children.map(node => node.title).sort(), ["GitHub", "News"]);
+  assert.ok(!restored.children.some(node => node.title === "Stuff"));
+});
+
+test("the activity tab is not opened when the setting is off", async () => {
+  const shared = { storage: { organizerSettings: { method: "ai", provider: "dave", openActivityOnStart: false } }, bookmarks: [{ id: "b0", title: "X", url: "https://x.com" }] };
+  const worker = backgroundHarness(shared, { status: "queued", progress: { completed: 0, total: 6 }, assignments: [] });
+  await worker.message("organizeBookmarks");
+  assert.equal((shared.tabsCreated || []).length, 0);
 });

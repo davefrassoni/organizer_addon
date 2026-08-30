@@ -400,5 +400,140 @@
   },
   "organizeInsideExcludedNote": {
     "message": "Classifica os próprios favoritos de cada pasta em novas pastas de categoria criadas dentro dela, como seu próprio lote, sem mover a pasta em si."
+  },
+  "activityTitle": {
+    "message": "Atividade da IA"
+  },
+  "activityHeading": {
+    "message": "Atividade da IA"
+  },
+  "activityLead": {
+    "message": "Detalhe ao vivo do que a IA está a fazer com os teus separadores e marcadores."
+  },
+  "activitySettingsLink": {
+    "message": "Definições de organização"
+  },
+  "activityNoJob": {
+    "message": "Ainda não há nenhuma tarefa de IA. Organiza separadores ou marcadores e o detalhe aparece aqui."
+  },
+  "activityCleared": {
+    "message": "Esta tarefa terminou e foi removida do popup. O detalhe abaixo é o último instantâneo."
+  },
+  "activityMethod": {
+    "message": "Método"
+  },
+  "activityProvider": {
+    "message": "Fornecedor"
+  },
+  "activityStarted": {
+    "message": "Iniciado"
+  },
+  "activityUpdated": {
+    "message": "Atualizado"
+  },
+  "activityItemsCount": {
+    "message": "$1 $2"
+  },
+  "activityStateQueued": {
+    "message": "Em fila"
+  },
+  "activityStateProcessing": {
+    "message": "A processar"
+  },
+  "activityStateApplying": {
+    "message": "A aplicar"
+  },
+  "activityStateCompleted": {
+    "message": "Concluído"
+  },
+  "activityRetryButton": {
+    "message": "Tentar de novo"
+  },
+  "activityUndoButton": {
+    "message": "Anular"
+  },
+  "activityRetryStarted": {
+    "message": "Nova tentativa iniciada."
+  },
+  "activityUndoConfirm": {
+    "message": "Anular esta organização e restaurar o que mudou?"
+  },
+  "activityUndoneBookmarks": {
+    "message": "Marcadores restaurados para a cópia feita antes de organizar."
+  },
+  "activityUndoneTabs": {
+    "message": "Separadores repostos na ordem anterior e desagrupados."
+  },
+  "activityBatchesHeading": {
+    "message": "Secções enviadas à IA"
+  },
+  "activityBatch": {
+    "message": "Secção $1"
+  },
+  "activityBatchDone": {
+    "message": "Enviada"
+  },
+  "activityBatchActive": {
+    "message": "A enviar…"
+  },
+  "activityBatchWaiting": {
+    "message": "Em espera"
+  },
+  "activityResultsHeading": {
+    "message": "Resultados"
+  },
+  "activityViewByCategory": {
+    "message": "Por categoria"
+  },
+  "activityViewFullList": {
+    "message": "Lista completa"
+  },
+  "activityColItem": {
+    "message": "Item"
+  },
+  "activityColCategory": {
+    "message": "Categoria"
+  },
+  "activityColWhy": {
+    "message": "Porquê"
+  },
+  "activityInferredChip": {
+    "message": "inferido"
+  },
+  "activityCommonSites": {
+    "message": "Sites frequentes: $1"
+  },
+  "activityTruncated": {
+    "message": "A mostrar os primeiros $1 de $2 itens."
+  },
+  "activityExplainInferred": {
+    "message": "A IA devolve apenas categorias, não o seu raciocínio. O Organizer resume cada grupo a partir dos sites e palavras que os seus itens partilham, por isso o “porquê” abaixo é inferido."
+  },
+  "activityExplainBuiltin": {
+    "message": "Cada item foi classificado no teu dispositivo comparando o endereço, o título e as palavras-chave da página com o catálogo integrado."
+  },
+  "activityExplainProvider": {
+    "message": "O motivo mostrado para cada item foi devolvido pelo teu fornecedor de IA."
+  },
+  "activityWhyMatched": {
+    "message": "Correspondeu a $1"
+  },
+  "activityWhyPopular": {
+    "message": "Site popular reconhecido"
+  },
+  "activityItemGone": {
+    "message": "Item $1 (já não disponível)"
+  },
+  "openActivityLabel": {
+    "message": "Mostrar a página de atividade da IA automaticamente"
+  },
+  "openActivityNote": {
+    "message": "Ao organizar com IA, abre um separador com o progresso de cada secção, a categoria escolhida para cada item e uma explicação do agrupamento. Também podes abri-lo a partir do popup."
+  },
+  "viewAiDetailButton": {
+    "message": "Ver detalhe da IA"
+  },
+  "bgUndoUnavailable": {
+    "message": "Esta organização não pode ser anulada."
   }
 }

@@ -103,6 +103,9 @@ function aiJobRow(job) {
   };
   detail.textContent = labels[job.state] || job.state;
   const actions = document.createElement("div"); actions.className = "item-actions";
+  const detailBtn = document.createElement("button"); detailBtn.className = "small"; detailBtn.textContent = t("viewAiDetailButton");
+  detailBtn.onclick = () => api.tabs.create({ url: api.runtime.getURL(`activity/activity.html?kind=${job.kind}`) });
+  actions.append(detailBtn);
   if (activeAiJob(job)) {
     const cancel = document.createElement("button"); cancel.className = "small danger"; cancel.textContent = t("cancelButton");
     cancel.onclick = async () => { cancel.disabled = true; status(t("cancellingAiJob"), "busy"); try { const response = await message("cancelAiJob", { id: job.id }); if (!response?.ok) throw new Error(response?.error || t("couldNotCancelAiJob")); status(t("aiJobCancelled"), "success"); await render(); } catch (error) { status(friendlyError(error, true), "error"); } };

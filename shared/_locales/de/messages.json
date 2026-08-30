@@ -400,5 +400,140 @@
   },
   "organizeInsideExcludedNote": {
     "message": "Sortiert die eigenen Lesezeichen jedes Ordners als eigenen Stapel in neue, darin erstellte Kategorieordner, ohne den Ordner selbst zu verschieben."
+  },
+  "activityTitle": {
+    "message": "KI-Aktivität"
+  },
+  "activityHeading": {
+    "message": "KI-Aktivität"
+  },
+  "activityLead": {
+    "message": "Live-Detail dessen, was die KI mit deinen Tabs und Lesezeichen macht."
+  },
+  "activitySettingsLink": {
+    "message": "Organisationseinstellungen"
+  },
+  "activityNoJob": {
+    "message": "Noch kein KI-Vorgang. Organisiere Tabs oder Lesezeichen und das Detail erscheint hier."
+  },
+  "activityCleared": {
+    "message": "Dieser Vorgang ist abgeschlossen und wurde aus dem Popup entfernt. Das Detail unten ist die letzte Momentaufnahme."
+  },
+  "activityMethod": {
+    "message": "Methode"
+  },
+  "activityProvider": {
+    "message": "Anbieter"
+  },
+  "activityStarted": {
+    "message": "Gestartet"
+  },
+  "activityUpdated": {
+    "message": "Aktualisiert"
+  },
+  "activityItemsCount": {
+    "message": "$1 $2"
+  },
+  "activityStateQueued": {
+    "message": "In Warteschlange"
+  },
+  "activityStateProcessing": {
+    "message": "Wird verarbeitet"
+  },
+  "activityStateApplying": {
+    "message": "Wird angewendet"
+  },
+  "activityStateCompleted": {
+    "message": "Abgeschlossen"
+  },
+  "activityRetryButton": {
+    "message": "Erneut versuchen"
+  },
+  "activityUndoButton": {
+    "message": "Rückgängig"
+  },
+  "activityRetryStarted": {
+    "message": "Neuer Versuch gestartet."
+  },
+  "activityUndoConfirm": {
+    "message": "Diese Organisation rückgängig machen und Änderungen wiederherstellen?"
+  },
+  "activityUndoneBookmarks": {
+    "message": "Lesezeichen auf das Backup vor dem Organisieren zurückgesetzt."
+  },
+  "activityUndoneTabs": {
+    "message": "Tabs in vorherige Reihenfolge zurückgesetzt und Gruppierung aufgehoben."
+  },
+  "activityBatchesHeading": {
+    "message": "An die KI gesendete Abschnitte"
+  },
+  "activityBatch": {
+    "message": "Abschnitt $1"
+  },
+  "activityBatchDone": {
+    "message": "Gesendet"
+  },
+  "activityBatchActive": {
+    "message": "Wird gesendet…"
+  },
+  "activityBatchWaiting": {
+    "message": "Wartet"
+  },
+  "activityResultsHeading": {
+    "message": "Ergebnisse"
+  },
+  "activityViewByCategory": {
+    "message": "Nach Kategorie"
+  },
+  "activityViewFullList": {
+    "message": "Vollständige Liste"
+  },
+  "activityColItem": {
+    "message": "Element"
+  },
+  "activityColCategory": {
+    "message": "Kategorie"
+  },
+  "activityColWhy": {
+    "message": "Warum"
+  },
+  "activityInferredChip": {
+    "message": "abgeleitet"
+  },
+  "activityCommonSites": {
+    "message": "Häufige Seiten: $1"
+  },
+  "activityTruncated": {
+    "message": "Es werden die ersten $1 von $2 Elementen angezeigt."
+  },
+  "activityExplainInferred": {
+    "message": "Die KI liefert nur Kategorien, nicht ihre Begründung. Organizer fasst jede Gruppe anhand der gemeinsamen Seiten und Wörter ihrer Elemente zusammen; das „Warum“ unten ist daher abgeleitet."
+  },
+  "activityExplainBuiltin": {
+    "message": "Jedes Element wurde auf deinem Gerät klassifiziert, indem Adresse, Titel und Seiten-Schlüsselwörter mit dem integrierten Katalog abgeglichen wurden."
+  },
+  "activityExplainProvider": {
+    "message": "Der für jedes Element angezeigte Grund wurde von deinem KI-Anbieter geliefert."
+  },
+  "activityWhyMatched": {
+    "message": "Übereinstimmung mit $1"
+  },
+  "activityWhyPopular": {
+    "message": "Bekannte beliebte Seite"
+  },
+  "activityItemGone": {
+    "message": "Element $1 (nicht mehr verfügbar)"
+  },
+  "openActivityLabel": {
+    "message": "KI-Aktivitätsseite automatisch anzeigen"
+  },
+  "openActivityNote": {
+    "message": "Beim Organisieren mit KI einen Tab mit dem Fortschritt pro Abschnitt, der für jedes Element gewählten Kategorie und einer Erklärung der Gruppierung öffnen. Du kannst ihn auch über das Popup öffnen."
+  },
+  "viewAiDetailButton": {
+    "message": "KI-Detail ansehen"
+  },
+  "bgUndoUnavailable": {
+    "message": "Diese Organisation kann nicht rückgängig gemacht werden."
   }
 }
