@@ -520,5 +520,14 @@
   },
   "languageAuto": {
     "message": "Automático (idioma del navegador)"
+  },
+  "activitySectionPending": {
+    "message": "Las categorías aparecen aquí cuando termina esta sección."
+  },
+  "keepBackupFolderLabel": {
+    "message": "Guardar el diseño anterior en una carpeta \"backup\""
+  },
+  "keepBackupFolderNote": {
+    "message": "Antes de organizar los marcadores, copia la disposición actual en una carpeta con fecha dentro de \"backup\" en tu primera raíz de marcadores. Desactívalo si tienes muchísimos marcadores."
   }
 }

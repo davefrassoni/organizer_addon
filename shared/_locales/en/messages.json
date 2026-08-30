@@ -520,5 +520,14 @@
   },
   "languageAuto": {
     "message": "Automatic (browser language)"
+  },
+  "activitySectionPending": {
+    "message": "Categories appear here once this section finishes."
+  },
+  "keepBackupFolderLabel": {
+    "message": "Keep the old layout in a \"backup\" folder"
+  },
+  "keepBackupFolderNote": {
+    "message": "Before organizing bookmarks, copy the current arrangement into a dated folder inside \"backup\" in your first bookmark root. Turn off for very large libraries."
   }
 }

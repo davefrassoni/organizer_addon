@@ -3,7 +3,7 @@ if (typeof OrganizerTopSites === "undefined" && typeof importScripts === "functi
 if (typeof OrganizerCategories === "undefined" && typeof importScripts === "function") importScripts("categories.js");
 const api = globalThis.browser || globalThis.chrome;
 const STORE = { tabs: "tabSessions", bookmarks: "bookmarkBackups", settings: "organizerSettings", aiJobs: "organizerAiJobs" };
-const DEFAULTS = { method: "ai", provider: "dave", apiKeys: {}, model: "", tabFallback: "reorder", closeDuplicateTabs: false, removeDuplicateBookmarks: false, bookmarkScope: "loose", excludeFoldersFromOrganizing: false, organizeInsideExcludedFolders: false, openActivityOnStart: true, uiLanguage: "auto" };
+const DEFAULTS = { method: "ai", provider: "dave", apiKeys: {}, model: "", tabFallback: "reorder", closeDuplicateTabs: false, removeDuplicateBookmarks: false, bookmarkScope: "loose", excludeFoldersFromOrganizing: false, organizeInsideExcludedFolders: false, openActivityOnStart: true, uiLanguage: "auto", keepBackupFolder: true };
 const DAVE_AI_ENDPOINT = "https://davefrassoni.com";
 const PUBLIC_CLIENT_KEY = "organizer-addon-v1"; // Identifier, not a secret. Server validation provides security.
 // Live worker timings show 50 items balances throughput and ~22-33s inference time.
@@ -19,6 +19,10 @@ const ACTIVE_JOB_STATES = new Set(["queued", "processing", "applying"]);
 // stores so a huge bookmark library can't bloat extension storage.
 const ACTIVITY_ITEM_CAP = 2000;
 const ACTIVITY_PAGE = "activity/activity.html";
+// Before organizing, a copy of the whole pre-organize tree is dropped into a
+// folder with this name in the first root, so the old layout stays visible in
+// the bookmark manager. Always skipped by the organizer itself.
+const BACKUP_FOLDER_NAME = "backup";
 const ALLOWED_URL = /^(https?|ftp):\/\//i;
 let jobOperation = Promise.resolve();
 
@@ -76,7 +80,7 @@ function canUndoJob(job) {
 }
 function fullAiJob(job) {
   if (!job) return null;
-  return { ...publicAiJob(job), method: job.method || null, provider: job.provider || null, backupId: job.backupId || null, undone: job.undone || null, canUndo: canUndoJob(job), detail: job.detail || null, assignments: job.assignments || null, explain: job.explain || null };
+  return { ...publicAiJob(job), method: job.method || null, provider: job.provider || null, backupId: job.backupId || null, undone: job.undone || null, canUndo: canUndoJob(job), detail: job.detail || null, assignments: job.assignments || null, explain: job.explain || null, sections: job.sections || null };
 }
 async function maybeOpenActivity(kind) {
   if (!api.tabs || !api.tabs.create) return;
@@ -136,10 +140,12 @@ function folderHostnames(node, out = new Set()) {
 // excludeFolders: folders stay put, never moved as units. Add
 // organizeInsideExcluded to still sort an excluded folder's own direct
 // bookmarks in place, without moving the folder or its nested contents.
+function isBackupFolder(node) { return node && !node.url && node.title === BACKUP_FOLDER_NAME; }
 function collectLooseBookmarks(roots, { excludeFolders = false, organizeInsideExcluded = false } = {}) {
   const out = [];
   for (const root of roots) {
     for (const node of root.children || []) {
+      if (isBackupFolder(node)) continue;
       if (node.url && ALLOWED_URL.test(node.url)) { out.push({ id: node.id, title: node.title, url: node.url, rootId: root.id, parentId: root.id }); continue; }
       if (!node.children) continue;
       if (excludeFolders) {
@@ -160,7 +166,7 @@ function flattenBookmarkNode(nodes, rootId, out, parentId) {
 }
 function collectAllBookmarks(roots) {
   const out = [];
-  for (const root of roots) flattenBookmarkNode(root.children, root.id, out, root.id);
+  for (const root of roots) flattenBookmarkNode((root.children || []).filter(node => !isBackupFolder(node)), root.id, out, root.id);
   return out;
 }
 
@@ -201,6 +207,27 @@ async function restoreBookmarkSnapshot(item) {
     const liveRoot = matchLiveRoot(snapshotRoots[index], liveRoots, index);
     await clearBookmarkChildren(liveRoot.children);
     await recreateBookmarkNodes(snapshotRoots[index].children, liveRoot.id);
+  }
+}
+
+// Copies the pre-organize tree into "<first root>/backup/<timestamp>/" so the
+// old arrangement stays browsable in the bookmark manager. `roots` must be the
+// tree read before this runs, so the new backup folder isn't copied into
+// itself. Any earlier backup folder is left out of the copy.
+async function stashVisibleBackup(roots) {
+  const firstRoot = roots[0];
+  if (!firstRoot) return;
+  const existing = (firstRoot.children || []).find(isBackupFolder);
+  const backupFolder = existing || await call(api.bookmarks, "create", { parentId: firstRoot.id, title: BACKUP_FOLDER_NAME });
+  const stamp = await call(api.bookmarks, "create", { parentId: backupFolder.id, title: new Date().toLocaleString() });
+  const multiRoot = roots.filter(root => (root.children || []).some(node => !isBackupFolder(node))).length > 1;
+  for (const root of roots) {
+    const kids = (root.children || []).filter(node => !isBackupFolder(node));
+    if (!kids.length) continue;
+    const parentId = multiRoot
+      ? (await call(api.bookmarks, "create", { parentId: stamp.id, title: root.title || BACKUP_FOLDER_NAME })).id
+      : stamp.id;
+    await recreateBookmarkNodes(kids, parentId);
   }
 }
 
@@ -272,12 +299,14 @@ async function startDaveJob(kind, items, meta = {}) {
     if (!response.ok) throw new Error((await response.json().catch(() => ({}))).detail || t("bgProviderReturned", [String(response.status)]));
     const created = await response.json();
     const now = new Date().toISOString();
+    const sections = OrganizerCategories.chunkRanges(payload, AI_BATCH_SIZE, AI_BATCH_MAX_BYTES);
     const job = {
       id: created.id,
       kind,
       state: created.status || "queued",
       count: items.length,
-      progress: { completed: 0, total: created.chunks || 1 },
+      progress: { completed: 0, total: created.chunks || sections.length || 1 },
+      sections,
       applyProgress: 0,
       refs: items.map(jobRef),
       detail: jobDetail(items),
@@ -448,6 +477,7 @@ async function startLocalApplyJob(kind, items, assignments, meta = {}) {
       state: "applying",
       count: items.length,
       progress: { completed: 1, total: 1 },
+      sections: [[0, items.length]],
       applyProgress: 0,
       refs: items.map(jobRef),
       detail: jobDetail(items),
@@ -626,6 +656,7 @@ async function organizeBookmarks() {
   const roots = await bookmarkRoots();
   let items = config.bookmarkScope === "all" ? collectAllBookmarks(roots) : collectLooseBookmarks(roots, { excludeFolders: !!config.excludeFoldersFromOrganizing, organizeInsideExcluded: !!config.organizeInsideExcludedFolders });
   if (!items.length) throw new Error(t("bgNoBookmarksToOrganize"));
+  if (config.keepBackupFolder !== false) await stashVisibleBackup(roots);
   if (config.removeDuplicateBookmarks) {
     // Folders are never duplicate candidates -- only bookmarks sent
     // alongside them.

@@ -34,6 +34,24 @@ test("an AI job opens a live activity page with per-item results, retry and undo
   assert.match(fs.readFileSync("shared/popup/popup.js", "utf8"), /activity\/activity\.html/);
   assert.match(fs.readFileSync("shared/options/options.html", "utf8"), /id="open-activity"/);
 });
+test("organizing keeps the pre-organize layout in a backup folder by default", () => {
+  const source = fs.readFileSync("shared/background.js", "utf8");
+  assert.match(source, /keepBackupFolder: true/);
+  assert.match(source, /BACKUP_FOLDER_NAME = "backup"/);
+  assert.match(source, /async function stashVisibleBackup/);
+  assert.match(source, /config\.keepBackupFolder !== false/);
+  assert.match(source, /function isBackupFolder/);
+  assert.match(fs.readFileSync("shared/options/options.html", "utf8"), /id="keep-backup-folder"/);
+});
+test("the activity page shows results section by section, collapsed", () => {
+  const source = fs.readFileSync("shared/background.js", "utf8");
+  assert.match(source, /OrganizerCategories\.chunkRanges\(payload, AI_BATCH_SIZE, AI_BATCH_MAX_BYTES\)/);
+  const activity = fs.readFileSync("shared/activity/activity.js", "utf8");
+  assert.match(activity, /function renderSections/);
+  assert.match(activity, /openSections/);
+  assert.match(activity, /document\.createElement\("details"\)/);
+  assert.match(fs.readFileSync("shared/activity/activity.html", "utf8"), /id="section-list"/);
+});
 test("the settings page has a language selector that can override the browser locale", () => {
   const options = fs.readFileSync("shared/options/options.html", "utf8");
   assert.match(options, /id="ui-language"/);

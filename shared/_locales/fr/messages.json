@@ -520,5 +520,14 @@
   },
   "languageAuto": {
     "message": "Automatique (langue du navigateur)"
+  },
+  "activitySectionPending": {
+    "message": "Les catégories apparaissent ici une fois cette section terminée."
+  },
+  "keepBackupFolderLabel": {
+    "message": "Conserver l’ancienne disposition dans un dossier « backup »"
+  },
+  "keepBackupFolderNote": {
+    "message": "Avant d’organiser les marque-pages, copier la disposition actuelle dans un dossier daté à l’intérieur de « backup », dans votre première racine de marque-pages. À désactiver pour les très grandes collections."
   }
 }

@@ -11,8 +11,10 @@ let busy = false;
 // Categories the user has expanded, so a re-render (or a poll) doesn't
 // collapse them again.
 const openCategories = new Set();
+const openSections = new Set();
 let userToggledCategory = false;
 let resultsKey = null;
+let sectionsKey = null;
 
 function message(action, extra = {}) {
   if (globalThis.browser) return api.runtime.sendMessage({ action, ...extra });
@@ -37,7 +39,7 @@ async function refresh() {
   catch (_) { return schedule(); }
   const next = response && response.ok ? response.result : null;
   if (next) {
-    if (!job || job.id !== next.id) { openCategories.clear(); userToggledCategory = false; resultsKey = null; }
+    if (!job || job.id !== next.id) { openCategories.clear(); openSections.clear(); userToggledCategory = false; resultsKey = null; sectionsKey = null; }
     job = next; kind = job.kind; $("#cleared").hidden = true; render();
   }
   else if (job) { $("#cleared").hidden = false; }
@@ -99,24 +101,68 @@ function renderActions() {
   }
 }
 
-function renderBatches() {
-  const list = $("#batch-list");
+function sectionRanges() {
   const total = Math.max(1, (job.progress && job.progress.total) || 1);
+  const count = job.count || 0;
+  // Prefer the exact boundaries the job recorded; fall back to an even split
+  // if they're missing or don't line up with the server's section count.
+  if (Array.isArray(job.sections) && job.sections.length === total) return job.sections;
+  return Array.from({ length: total }, (_, index) => [Math.floor((index * count) / total), Math.floor(((index + 1) * count) / total)]);
+}
+
+function renderSections() {
+  const ranges = sectionRanges();
   let done = (job.progress && job.progress.completed) || 0;
-  if (job.state === "completed" || job.state === "applying") done = total;
-  const rows = [];
-  for (let index = 0; index < total; index++) {
+  if (job.state === "completed" || job.state === "applying") done = ranges.length;
+  const detail = job.detail || { items: [] };
+  const hasResults = Array.isArray(job.assignments);
+
+  const key = `${job.id}|${done}|${ranges.length}|${job.state}|${hasResults}`;
+  if (key === sectionsKey) return;
+  sectionsKey = key;
+
+  $("#section-list").replaceChildren(...ranges.map(([start, end], index) => {
     const state = index < done ? "done" : (index === done && job.state === "processing" ? "active" : "wait");
-    const li = document.createElement("li");
+    const statusLabel = state === "done" ? t("activityBatchDone") : state === "active" ? t("activityBatchActive") : t("activityBatchWaiting");
+
+    const box = document.createElement("details");
+    box.className = "section";
+    box.open = openSections.has(index);
+    box.addEventListener("toggle", () => { box.open ? openSections.add(index) : openSections.delete(index); });
+
+    const summary = document.createElement("summary");
     const dot = document.createElement("span");
     dot.className = `dot ${state}`;
     const label = document.createElement("span");
-    const status = state === "done" ? t("activityBatchDone") : state === "active" ? t("activityBatchActive") : t("activityBatchWaiting");
-    label.textContent = `${t("activityBatch", [String(index + 1)])} · ${status}`;
-    li.append(dot, label);
-    rows.push(li);
-  }
-  list.replaceChildren(...rows);
+    label.className = "section-label";
+    label.textContent = `${t("activityBatch", [String(index + 1)])} · ${statusLabel} · ${t("activityItemsCount", [String(end - start), job.kind === "tabs" ? t("kindTabsLabel") : t("kindBookmarksLabel")])}`;
+    summary.append(dot, label);
+    box.append(summary);
+
+    const bodyItems = [];
+    for (let i = start; i < end; i++) {
+      const stored = detail.items[i];
+      if (!stored) continue;
+      const li = document.createElement("li");
+      const name = document.createElement("span");
+      name.textContent = itemLabel(stored, i);
+      li.append(name);
+      const meta = [host(stored.url), hasResults ? (job.assignments[i] || {}).category : ""].filter(Boolean);
+      if (meta.length) { const sub = document.createElement("span"); sub.className = "sub"; sub.textContent = meta.join(" → "); li.append(sub); }
+      bodyItems.push(li);
+    }
+    if (bodyItems.length) {
+      const ul = document.createElement("ul");
+      ul.append(...bodyItems);
+      box.append(ul);
+    } else {
+      const note = document.createElement("p");
+      note.className = "section-note muted";
+      note.textContent = t("activitySectionPending");
+      box.append(note);
+    }
+    return box;
+  }));
 }
 
 function itemLabel(item, fallbackIndex) {
@@ -213,7 +259,7 @@ function render() {
   $("#job").hidden = false;
   renderSummary();
   renderActions();
-  renderBatches();
+  renderSections();
   renderResults();
 }
 
