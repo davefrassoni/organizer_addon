@@ -3,7 +3,7 @@ if (typeof OrganizerTopSites === "undefined" && typeof importScripts === "functi
 if (typeof OrganizerCategories === "undefined" && typeof importScripts === "function") importScripts("categories.js");
 const api = globalThis.browser || globalThis.chrome;
 const STORE = { tabs: "tabSessions", bookmarks: "bookmarkBackups", settings: "organizerSettings", aiJobs: "organizerAiJobs" };
-const DEFAULTS = { method: "ai", provider: "dave", apiKeys: {}, model: "", tabFallback: "reorder", closeDuplicateTabs: false, removeDuplicateBookmarks: false, bookmarkScope: "loose", excludeFoldersFromOrganizing: false, organizeInsideExcludedFolders: false, openActivityOnStart: true };
+const DEFAULTS = { method: "ai", provider: "dave", apiKeys: {}, model: "", tabFallback: "reorder", closeDuplicateTabs: false, removeDuplicateBookmarks: false, bookmarkScope: "loose", excludeFoldersFromOrganizing: false, organizeInsideExcludedFolders: false, openActivityOnStart: true, uiLanguage: "auto" };
 const DAVE_AI_ENDPOINT = "https://davefrassoni.com";
 const PUBLIC_CLIENT_KEY = "organizer-addon-v1"; // Identifier, not a secret. Server validation provides security.
 // Live worker timings show 50 items balances throughput and ~22-33s inference time.
@@ -63,16 +63,11 @@ function jobDetail(items) {
     items: kept.map(item => ({ title: item.title || "", url: item.url || "", pinned: !!item.pinned, isFolder: !!item.isFolder, tabId: Number.isInteger(item.id) ? item.id : undefined })),
   };
 }
-// The grouping digest the activity page renders. "source" tells the page how
-// much it can say about the reasoning: the built-in method is fully explained
-// locally, a vendor AI may return a per-item reason, and Dave AI returns
-// categories only so each group's "why" is inferred from shared sites/words.
+// The per-category digest the activity page renders: how many items landed in
+// each category and the sites they have in common.
 function buildExplain(job) {
   if (!job.detail || !Array.isArray(job.assignments)) return null;
-  const providerReasons = job.assignments.some(row => row.reason);
-  const source = job.method !== "ai" ? "builtin" : providerReasons ? "provider" : "inferred";
-  if (source === "builtin") job.detail.items.forEach((item, index) => { if (index < job.assignments.length && !item.why) item.why = OrganizerCategories.explain(item); });
-  return { source, categories: OrganizerCategories.summarizeCategories(job.detail.items, job.assignments) };
+  return { categories: OrganizerCategories.summarizeCategories(job.detail.items, job.assignments) };
 }
 function canUndoJob(job) {
   if (!job || job.state !== "completed" || job.undone) return false;
@@ -214,11 +209,8 @@ function normalizeAssignments(raw, length) {
   const rows = Array.isArray(raw) ? raw : raw.assignments;
   if (!Array.isArray(rows)) throw new Error(t("bgAiInvalidResponse"));
   const map = new Map();
-  for (const row of rows) if (Number.isInteger(row.index) && row.index >= 0 && row.index < length && typeof row.category === "string") {
-    const category = row.category.trim().replace(/[\\/:*?\"<>|]/g, " ").slice(0, 50) || "Other";
-    map.set(row.index, { category, reason: typeof row.reason === "string" ? row.reason.trim().slice(0, 160) : "" });
-  }
-  return Array.from({ length }, (_, index) => ({ index, ...(map.get(index) || { category: "Other", reason: "" }) }));
+  for (const row of rows) if (Number.isInteger(row.index) && row.index >= 0 && row.index < length && typeof row.category === "string") map.set(row.index, row.category.trim().replace(/[\\/:*?\"<>|]/g, " ").slice(0, 50) || "Other");
+  return Array.from({ length }, (_, index) => ({ index, category: map.get(index) || "Other" }));
 }
 
 async function storedAiJobs() { return (await getLocal({ [STORE.aiJobs]: {} }))[STORE.aiJobs] || {}; }
@@ -608,7 +600,7 @@ async function undoAiJob(jobId) {
 async function vendorAI(items, kind, config) {
   const key = config.apiKeys && config.apiKeys[config.provider];
   if (!key) throw new Error(t("bgAddApiKey", [config.provider]));
-  const instruction = `Categorize these ${kind}. Return JSON only as {"assignments":[{"index":0,"category":"Name","reason":"why, under 12 words"}]}. Every input index must occur once. Use concise, safe category names, and a short plain reason per item.`;
+  const instruction = `Categorize these ${kind}. Return JSON only as {"assignments":[{"index":0,"category":"Name"}]}. Every input index must occur once. Use concise, safe category names.`;
   let response;
   if (config.provider === "openai") response = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` }, body: JSON.stringify({ model: config.model || "gpt-4.1-mini", response_format: { type: "json_object" }, messages: [{ role: "system", content: instruction }, { role: "user", content: JSON.stringify(items) }] }) });
   else if (config.provider === "anthropic") response = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" }, body: JSON.stringify({ model: config.model || "claude-3-5-haiku-latest", max_tokens: 2048, system: instruction, messages: [{ role: "user", content: JSON.stringify(items) }] }) });

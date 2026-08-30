@@ -39,21 +39,6 @@
   }
   function assignments(items) { return items.map((item, index) => ({ index, category: categoryFor(item) })); }
   function hostOf(url) { const parsed = safeUrl(url || ""); return parsed ? parsed.hostname.replace(/^www\./, "") : ""; }
-  // Why the built-in method put an item where it did: the catalog terms that
-  // matched, or the domain/top-site fallback it used instead.
-  function explain(item) {
-    const parsed = safeUrl(item.url || "");
-    const text = `${parsed ? parsed.hostname : ""} ${item.title || ""} ${(item.metaTags || []).join(" ")}`.toLowerCase();
-    let best = null;
-    for (const category of CATEGORIES) {
-      const terms = category.terms.filter(term => text.includes(term));
-      if (terms.length && (!best || terms.length > best.terms.length)) best = { name: category.name, terms };
-    }
-    const hostname = parsed ? parsed.hostname.replace(/^www\./, "") : "";
-    if (best) return { signal: "keyword", terms: best.terms.slice(0, 4) };
-    if (TOP_SITES.has(hostname)) return { signal: "topSite", terms: hostname ? [hostname] : [] };
-    return { signal: hostname ? "domain" : "fallback", terms: hostname ? [hostname] : [] };
-  }
   function topValues(values, limit) {
     const counts = new Map();
     for (const value of values) if (value) counts.set(value, (counts.get(value) || 0) + 1);
@@ -108,5 +93,5 @@
     }
     return combined;
   }
-  return { CATEGORIES, categoryFor, assignments, explain, summarizeCategories, hostOf, splitDuplicateUrls, batchedAssignments };
+  return { CATEGORIES, categoryFor, assignments, summarizeCategories, hostOf, splitDuplicateUrls, batchedAssignments };
 });

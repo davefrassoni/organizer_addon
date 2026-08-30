@@ -143,7 +143,6 @@ async function render() {
 }
 function countBookmarks(nodes) { return (nodes || []).reduce((sum, x) => sum + (x.url ? 1 : 0) + countBookmarks(x.children), 0); }
 async function loadSettings() { const stored = await api.storage.local.get({ organizerSettings: currentSettings }); currentSettings = { ...currentSettings, ...stored.organizerSettings }; }
-OrganizerI18n.apply();
 $("#save-close").onclick = () => run("saveTabs", { closeAfter: true }, t("sessionSavedClosed"));
 $("#save-tabs").onclick = () => run("saveTabs", {}, t("tabsBackedUp"));
 $("#save-bookmarks").onclick = () => run("saveBookmarks", {}, t("bookmarksBackedUp"));
@@ -153,6 +152,10 @@ $("#settings").onclick = () => api.runtime.openOptionsPage();
 document.querySelectorAll("[data-export]").forEach(button => button.onclick = async () => { const response = await message("list"); const store = button.dataset.export; const blob = new Blob([JSON.stringify({ format: "organizer-addon", version: 1, type: store, items: response.result[store] }, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `organizer-${store}-${new Date().toISOString().slice(0,10)}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); });
 document.querySelectorAll("[data-import]").forEach(button => button.onclick = () => { pendingImport = button.dataset.import; $("#file").click(); });
 $("#file").onchange = async event => { try { const parsed = JSON.parse(await event.target.files[0].text()); if (parsed.format !== "organizer-addon" || parsed.type !== pendingImport || !Array.isArray(parsed.items)) throw new Error(t("incompatibleBackupFile")); await run("import", { store: pendingImport, items: parsed.items }, t("backupImported")); } catch (error) { $("#status").className = "error"; $("#status").textContent = error.message; } event.target.value = ""; };
+OrganizerI18n.apply();
 setOrganizeBusy(true);
-Promise.all([loadSettings(), render()]).then(() => setOrganizeBusy(false)).catch(error => status(friendlyError(error), "error"));
-setInterval(() => { if (!document.hidden) render().catch(error => status(friendlyError(error), "error")); }, 5000);
+OrganizerI18n.init().then(() => {
+  OrganizerI18n.apply();
+  Promise.all([loadSettings(), render()]).then(() => setOrganizeBusy(false)).catch(error => status(friendlyError(error), "error"));
+  setInterval(() => { if (!document.hidden) render().catch(error => status(friendlyError(error), "error")); }, 5000);
+});

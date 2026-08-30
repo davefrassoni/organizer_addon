@@ -384,7 +384,7 @@ test("restoring a bookmark snapshot rebuilds each root to match it exactly, leav
   assert.ok(!JSON.stringify(shared.tree).includes("Development"));
 });
 
-test("the activity detail exposes per-item categories and an inferred explanation for a Dave job", async () => {
+test("the activity detail exposes per-item categories and a per-category site digest", async () => {
   const bookmarks = [
     { id: "b0", title: "GitHub", url: "https://github.com/a" },
     { id: "b1", title: "GitLab", url: "https://gitlab.com/b" },
@@ -412,23 +412,10 @@ test("the activity detail exposes per-item categories and an inferred explanatio
   assert.equal(job.provider, "dave");
   assert.equal(job.detail.items.length, 3);
   assert.equal(job.assignments[0].category, "Development");
-  assert.equal(job.explain.source, "inferred");
   const dev = job.explain.categories.find(entry => entry.name === "Development");
   assert.equal(dev.count, 2);
   assert.deepEqual(dev.domains.sort(), ["github.com", "gitlab.com"]);
   assert.equal(job.canUndo, true);
-});
-
-test("a built-in job records a local reason for every item", async () => {
-  const shared = { storage: { organizerSettings: { method: "builtin" } }, bookmarks: [
-    { id: "b0", title: "Repo", url: "https://github.com/a" },
-  ] };
-  const worker = backgroundHarness(shared, {});
-  await worker.message("organizeBookmarks");
-  const res = await worker.message("aiJobDetail", { kind: "bookmarks" });
-  assert.equal(res.result.explain.source, "builtin");
-  assert.equal(res.result.detail.items[0].why.signal, "keyword");
-  assert.ok(res.result.detail.items[0].why.terms.includes("github"));
 });
 
 test("retrying a finished job runs a fresh organize for the same kind", async () => {
