@@ -465,19 +465,19 @@
     "message": "Schede riportate all’ordine precedente e separate dai gruppi."
   },
   "activityBatchesHeading": {
-    "message": "Sezioni inviate all’IA"
+    "message": "Sezioni in elaborazione dall’IA"
   },
   "activityBatch": {
     "message": "Sezione $1"
   },
   "activityBatchDone": {
-    "message": "Inviata"
+    "message": "Completato"
   },
   "activityBatchActive": {
-    "message": "Invio…"
+    "message": "Elaborazione…"
   },
   "activityBatchWaiting": {
-    "message": "In attesa"
+    "message": "In coda"
   },
   "activityResultsHeading": {
     "message": "Risultati"

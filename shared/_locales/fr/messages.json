@@ -465,19 +465,19 @@
     "message": "Onglets remis dans leur ordre précédent et dégroupés."
   },
   "activityBatchesHeading": {
-    "message": "Sections envoyées à l’IA"
+    "message": "Sections en cours de traitement par l’IA"
   },
   "activityBatch": {
     "message": "Section $1"
   },
   "activityBatchDone": {
-    "message": "Envoyée"
+    "message": "Terminé"
   },
   "activityBatchActive": {
-    "message": "Envoi…"
+    "message": "Traitement…"
   },
   "activityBatchWaiting": {
-    "message": "En attente"
+    "message": "En file"
   },
   "activityResultsHeading": {
     "message": "Résultats"

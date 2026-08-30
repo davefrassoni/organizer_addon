@@ -465,19 +465,19 @@
     "message": "Tabs in vorherige Reihenfolge zurückgesetzt und Gruppierung aufgehoben."
   },
   "activityBatchesHeading": {
-    "message": "An die KI gesendete Abschnitte"
+    "message": "Abschnitte, die die KI verarbeitet"
   },
   "activityBatch": {
     "message": "Abschnitt $1"
   },
   "activityBatchDone": {
-    "message": "Gesendet"
+    "message": "Fertig"
   },
   "activityBatchActive": {
-    "message": "Wird gesendet…"
+    "message": "Wird verarbeitet…"
   },
   "activityBatchWaiting": {
-    "message": "Wartet"
+    "message": "In Warteschlange"
   },
   "activityResultsHeading": {
     "message": "Ergebnisse"

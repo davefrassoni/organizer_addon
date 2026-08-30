@@ -465,19 +465,19 @@
     "message": "Separadores repostos na ordem anterior e desagrupados."
   },
   "activityBatchesHeading": {
-    "message": "Secções enviadas à IA"
+    "message": "Secções que a IA está a processar"
   },
   "activityBatch": {
     "message": "Secção $1"
   },
   "activityBatchDone": {
-    "message": "Enviada"
+    "message": "Concluído"
   },
   "activityBatchActive": {
-    "message": "A enviar…"
+    "message": "A processar…"
   },
   "activityBatchWaiting": {
-    "message": "Em espera"
+    "message": "Em fila"
   },
   "activityResultsHeading": {
     "message": "Resultados"
