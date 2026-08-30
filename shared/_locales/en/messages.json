@@ -529,5 +529,14 @@
   },
   "keepBackupFolderNote": {
     "message": "Before organizing bookmarks, copy the current arrangement into a dated folder inside \"backup\" in your first bookmark root. Turn off for very large libraries."
+  },
+  "settingsGroupGeneral": {
+    "message": "General"
+  },
+  "settingsGroupTabs": {
+    "message": "Tabs"
+  },
+  "settingsGroupBookmarks": {
+    "message": "Bookmarks"
   }
 }

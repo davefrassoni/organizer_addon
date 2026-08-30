@@ -529,5 +529,14 @@
   },
   "keepBackupFolderNote": {
     "message": "Antes de organizar os marcadores, copiar a disposição atual para uma pasta com data dentro de \"backup\" na tua primeira raiz de marcadores. Desativa em coleções muito grandes."
+  },
+  "settingsGroupGeneral": {
+    "message": "Geral"
+  },
+  "settingsGroupTabs": {
+    "message": "Separadores"
+  },
+  "settingsGroupBookmarks": {
+    "message": "Marcadores"
   }
 }

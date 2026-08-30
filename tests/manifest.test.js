@@ -52,6 +52,18 @@ test("the activity page shows results section by section, collapsed", () => {
   assert.match(activity, /document\.createElement\("details"\)/);
   assert.match(fs.readFileSync("shared/activity/activity.html", "utf8"), /id="section-list"/);
 });
+test("settings are grouped into General, Tabs and Bookmarks sections", () => {
+  const options = fs.readFileSync("shared/options/options.html", "utf8");
+  for (const key of ["settingsGroupGeneral", "settingsGroupTabs", "settingsGroupBookmarks"]) assert.match(options, new RegExp(`data-i18n="${key}"`));
+  const tabsGroup = options.split('data-i18n="settingsGroupTabs"')[1].split("</fieldset>")[0];
+  assert.match(tabsGroup, /id="tab-fallback"/);
+  assert.match(tabsGroup, /id="close-duplicate-tabs"/);
+  const bookmarksGroup = options.split('data-i18n="settingsGroupBookmarks"')[1].split("</fieldset>")[0];
+  for (const id of ["bookmark-scope", "exclude-folders", "organize-inside-excluded", "remove-duplicate-bookmarks", "keep-backup-folder"]) assert.match(bookmarksGroup, new RegExp(`id="${id}"`));
+  // tab settings must not be in the bookmarks group and vice versa
+  assert.ok(!/id="close-duplicate-tabs"/.test(bookmarksGroup));
+  assert.ok(!/id="keep-backup-folder"/.test(tabsGroup));
+});
 test("the settings page has a language selector that can override the browser locale", () => {
   const options = fs.readFileSync("shared/options/options.html", "utf8");
   assert.match(options, /id="ui-language"/);
