@@ -508,3 +508,16 @@ test("a Dave job records contiguous section ranges the activity detail can slice
   const sections = (await worker.message("aiJobDetail", { kind: "bookmarks" })).result.sections;
   assert.deepEqual(sections, [[0, 50], [50, 100], [100, 120]]);
 });
+
+test("Dave section completion timestamps accrue while the job is processing", async () => {
+  const bookmarks = Array.from({ length: 100 }, (_, index) => ({ id: `b${index}`, title: `B${index}`, url: `https://example.com/${index}` }));
+  const shared = { storage: { organizerSettings: { method: "ai", provider: "dave", keepBackupFolder: false } }, bookmarks };
+  const remote = { status: "processing", progress: { completed: 1, total: 2 }, assignments: bookmarks.map((_, index) => ({ index, category: "G" })) };
+  const worker = backgroundHarness(shared, remote);
+  await worker.message("organizeBookmarks");
+  worker.alarm();
+  await waitFor(() => (shared.storage.organizerAiJobs.bookmarks.sectionCompletedAt || []).length >= 1);
+  const job = (await worker.message("aiJobDetail", { kind: "bookmarks" })).result;
+  assert.ok(job.processingStartedAt, "processing start is recorded");
+  assert.ok((job.sectionCompletedAt || []).length >= 1, "a section completion time is recorded");
+});

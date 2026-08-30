@@ -25,6 +25,7 @@ const ACTIVITY_PAGE = "activity/activity.html";
 const BACKUP_FOLDER_NAME = "backup";
 const ALLOWED_URL = /^(https?|ftp):\/\//i;
 let jobOperation = Promise.resolve();
+let lastDetailResume = 0;
 
 function t(key, subs) { return (api.i18n && api.i18n.getMessage(key, subs)) || key; }
 
@@ -80,7 +81,7 @@ function canUndoJob(job) {
 }
 function fullAiJob(job) {
   if (!job) return null;
-  return { ...publicAiJob(job), method: job.method || null, provider: job.provider || null, backupId: job.backupId || null, undone: job.undone || null, canUndo: canUndoJob(job), detail: job.detail || null, assignments: job.assignments || null, explain: job.explain || null, sections: job.sections || null };
+  return { ...publicAiJob(job), method: job.method || null, provider: job.provider || null, backupId: job.backupId || null, undone: job.undone || null, canUndo: canUndoJob(job), detail: job.detail || null, assignments: job.assignments || null, explain: job.explain || null, sections: job.sections || null, sectionCompletedAt: job.sectionCompletedAt || null, processingStartedAt: job.processingStartedAt || null, partialAssignments: job.partialAssignments || null };
 }
 async function maybeOpenActivity(kind) {
   if (!api.tabs || !api.tabs.create) return;
@@ -512,13 +513,25 @@ async function pollDaveJob(jobs, job) {
   const remote = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(remote.detail || t("bgProviderReturned", [String(response.status)]));
   job.progress = remote.progress || job.progress;
-  job.updatedAt = new Date().toISOString();
+  const stamp = new Date().toISOString();
+  job.updatedAt = stamp;
+  // Timestamp each section as it completes so the activity page can show how
+  // long it took. Poll-time accuracy (~2s while the page is open) is enough.
+  const completedSections = Math.min((job.progress && job.progress.completed) || 0, (job.progress && job.progress.total) || 0);
+  job.sectionCompletedAt ||= [];
+  if (!job.processingStartedAt && (remote.status === "processing" || completedSections > 0)) job.processingStartedAt = stamp;
+  while (job.sectionCompletedAt.length < completedSections) job.sectionCompletedAt.push(stamp);
+  // Some deployments stream partial category assignments while processing;
+  // surface them per section without feeding incomplete data into apply.
+  const partialRows = remote.result && (Array.isArray(remote.result) ? remote.result : remote.result.assignments);
+  if (Array.isArray(partialRows)) job.partialAssignments = partialRows.filter(row => Number.isInteger(row?.index) && typeof row?.category === "string").map(row => ({ index: row.index, category: row.category }));
   if (remote.status === "completed") {
     job.assignments = normalizeAssignments(remote.result, job.refs.length);
     job.state = "applying";
     job.applyProgress = job.applyProgress || 0;
     job.retryCount = 0;
     job.error = "";
+    delete job.partialAssignments;
     await saveAiJobs(jobs);
     return applyJob(jobs, job);
   }
@@ -706,7 +719,8 @@ api.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.action === "dismissAiJob") return dismissAiJob(message.id);
     if (message.action === "refreshAiJobs") { void resumeJobs(); return publicAiJobs(); }
     if (message.action === "aiJobDetail") {
-      void resumeJobs();
+      // The activity page polls this ~every 2s; don't fire a Dave GET that often.
+      if (Date.now() - lastDetailResume > 4000) { lastDetailResume = Date.now(); void resumeJobs(); }
       const jobs = await storedAiJobs();
       const mostRecent = Object.values(jobs).filter(Boolean).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0];
       const job = (message.id && Object.values(jobs).find(candidate => candidate?.id === message.id)) || (JOB_KINDS.includes(message.kind) && jobs[message.kind]) || mostRecent || null;

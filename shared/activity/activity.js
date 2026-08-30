@@ -48,7 +48,7 @@ async function refresh() {
 }
 function schedule() {
   clearTimeout(timer);
-  timer = setTimeout(refresh, job && ACTIVE.has(job.state) ? 1200 : 6000);
+  timer = setTimeout(refresh, job && ACTIVE.has(job.state) ? 2000 : 6000);
 }
 
 function renderSummary() {
@@ -101,6 +101,20 @@ function renderActions() {
   }
 }
 
+function fmtDuration(ms) {
+  const total = Math.round(ms / 1000);
+  const h = Math.floor(total / 3600), m = Math.floor((total % 3600) / 60), s = total % 60;
+  return h ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${m}:${String(s).padStart(2, "0")}`;
+}
+function sectionDurationMs(index) {
+  const times = job.sectionCompletedAt || [];
+  const end = times[index];
+  const start = index === 0 ? (job.processingStartedAt || job.createdAt) : times[index - 1];
+  if (!start || !end) return null;
+  const ms = new Date(end) - new Date(start);
+  return ms >= 500 ? ms : null;
+}
+
 function sectionRanges() {
   const total = Math.max(1, (job.progress && job.progress.total) || 1);
   const count = job.count || 0;
@@ -116,8 +130,10 @@ function renderSections() {
   if (job.state === "completed" || job.state === "applying") done = ranges.length;
   const detail = job.detail || { items: [] };
   const hasResults = Array.isArray(job.assignments);
+  const partial = new Map((job.partialAssignments || []).map(row => [row.index, row.category]));
+  const categoryOf = index => (hasResults ? (job.assignments[index] || {}).category : partial.get(index)) || "";
 
-  const key = `${job.id}|${done}|${ranges.length}|${job.state}|${hasResults}`;
+  const key = `${job.id}|${done}|${ranges.length}|${job.state}|${hasResults}|${partial.size}|${(job.sectionCompletedAt || []).length}`;
   if (key === sectionsKey) return;
   sectionsKey = key;
 
@@ -133,9 +149,10 @@ function renderSections() {
     const summary = document.createElement("summary");
     const dot = document.createElement("span");
     dot.className = `dot ${state}`;
+    const duration = sectionDurationMs(index);
     const label = document.createElement("span");
     label.className = "section-label";
-    label.textContent = `${t("activityBatch", [String(index + 1)])} · ${statusLabel} · ${t("activityItemsCount", [String(end - start), job.kind === "tabs" ? t("kindTabsLabel") : t("kindBookmarksLabel")])}`;
+    label.textContent = `${t("activityBatch", [String(index + 1)])} · ${statusLabel} · ${t("activityItemsCount", [String(end - start), job.kind === "tabs" ? t("kindTabsLabel") : t("kindBookmarksLabel")])}${duration != null ? ` (${fmtDuration(duration)})` : ""}`;
     summary.append(dot, label);
     box.append(summary);
 
@@ -147,7 +164,7 @@ function renderSections() {
       const name = document.createElement("span");
       name.textContent = itemLabel(stored, i);
       li.append(name);
-      const meta = [host(stored.url), hasResults ? (job.assignments[i] || {}).category : ""].filter(Boolean);
+      const meta = [host(stored.url), categoryOf(i)].filter(Boolean);
       if (meta.length) { const sub = document.createElement("span"); sub.className = "sub"; sub.textContent = meta.join(" → "); li.append(sub); }
       bodyItems.push(li);
     }
