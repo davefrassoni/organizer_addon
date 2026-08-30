@@ -1,8 +1,8 @@
 # Organizer privacy policy
 
-Last updated: August 13, 2026.
+Last updated: August 30, 2026.
 
-Organizer stores tab-session backups, bookmark backups, settings, resumable AI job status, and optional AI-provider API keys locally in the user's browser. Resumable job records contain the Dave parent job ID and browser bookmark IDs, but do not duplicate bookmark titles or URLs. Organizer has no analytics, advertising, tracking pixels, or sale of user information.
+Organizer stores tab-session backups, bookmark backups, settings, resumable AI job status, and optional AI-provider API keys locally in the user's browser. A job record holds the Dave parent job ID, browser tab/bookmark IDs, and — so the activity page can show what was organized — a size-capped local copy of the titles, URLs, and assigned categories of the items in that job. This stays in extension-local storage, is never transmitted anywhere, and is cleared when the job is dismissed (the popup does this automatically a few seconds after a finished job has been seen). Organizer has no analytics, advertising, tracking pixels, or sale of user information.
 
 ## Local features
 
