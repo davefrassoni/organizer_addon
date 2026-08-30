@@ -465,19 +465,19 @@
     "message": "Pestañas devueltas a su orden anterior y desagrupadas."
   },
   "activityBatchesHeading": {
-    "message": "Secciones enviadas a la IA"
+    "message": "Secciones que la IA está procesando"
   },
   "activityBatch": {
     "message": "Sección $1"
   },
   "activityBatchDone": {
-    "message": "Enviada"
+    "message": "Completado"
   },
   "activityBatchActive": {
-    "message": "Enviando…"
+    "message": "Procesando…"
   },
   "activityBatchWaiting": {
-    "message": "En espera"
+    "message": "En cola"
   },
   "activityResultsHeading": {
     "message": "Resultados"

@@ -465,19 +465,19 @@
     "message": "Tabs returned to their previous order and ungrouped."
   },
   "activityBatchesHeading": {
-    "message": "Sections sent to the AI"
+    "message": "Sections the AI is processing"
   },
   "activityBatch": {
     "message": "Section $1"
   },
   "activityBatchDone": {
-    "message": "Sent"
+    "message": "Done"
   },
   "activityBatchActive": {
-    "message": "Sending…"
+    "message": "Processing…"
   },
   "activityBatchWaiting": {
-    "message": "Waiting"
+    "message": "Queued"
   },
   "activityResultsHeading": {
     "message": "Results"
