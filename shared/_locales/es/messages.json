@@ -400,5 +400,140 @@
   },
   "organizeInsideExcludedNote": {
     "message": "Clasifica los propios marcadores de cada carpeta en nuevas carpetas de categoría creadas dentro de ella, como su propio lote, sin mover la carpeta en sí."
+  },
+  "activityTitle": {
+    "message": "Actividad de IA"
+  },
+  "activityHeading": {
+    "message": "Actividad de IA"
+  },
+  "activityLead": {
+    "message": "Detalle en vivo de lo que la IA está haciendo con tus pestañas y marcadores."
+  },
+  "activitySettingsLink": {
+    "message": "Ajustes de organización"
+  },
+  "activityNoJob": {
+    "message": "Aún no hay ningún trabajo de IA. Organiza pestañas o marcadores y el detalle aparecerá aquí."
+  },
+  "activityCleared": {
+    "message": "Este trabajo terminó y se quitó del popup. El detalle de abajo es la última instantánea."
+  },
+  "activityMethod": {
+    "message": "Método"
+  },
+  "activityProvider": {
+    "message": "Proveedor"
+  },
+  "activityStarted": {
+    "message": "Iniciado"
+  },
+  "activityUpdated": {
+    "message": "Actualizado"
+  },
+  "activityItemsCount": {
+    "message": "$1 $2"
+  },
+  "activityStateQueued": {
+    "message": "En cola"
+  },
+  "activityStateProcessing": {
+    "message": "Procesando"
+  },
+  "activityStateApplying": {
+    "message": "Aplicando"
+  },
+  "activityStateCompleted": {
+    "message": "Completado"
+  },
+  "activityRetryButton": {
+    "message": "Reintentar"
+  },
+  "activityUndoButton": {
+    "message": "Deshacer"
+  },
+  "activityRetryStarted": {
+    "message": "Reintento iniciado."
+  },
+  "activityUndoConfirm": {
+    "message": "¿Deshacer esta organización y restaurar lo que cambió?"
+  },
+  "activityUndoneBookmarks": {
+    "message": "Marcadores restaurados a la copia hecha antes de organizar."
+  },
+  "activityUndoneTabs": {
+    "message": "Pestañas devueltas a su orden anterior y desagrupadas."
+  },
+  "activityBatchesHeading": {
+    "message": "Secciones enviadas a la IA"
+  },
+  "activityBatch": {
+    "message": "Sección $1"
+  },
+  "activityBatchDone": {
+    "message": "Enviada"
+  },
+  "activityBatchActive": {
+    "message": "Enviando…"
+  },
+  "activityBatchWaiting": {
+    "message": "En espera"
+  },
+  "activityResultsHeading": {
+    "message": "Resultados"
+  },
+  "activityViewByCategory": {
+    "message": "Por categoría"
+  },
+  "activityViewFullList": {
+    "message": "Lista completa"
+  },
+  "activityColItem": {
+    "message": "Elemento"
+  },
+  "activityColCategory": {
+    "message": "Categoría"
+  },
+  "activityColWhy": {
+    "message": "Por qué"
+  },
+  "activityInferredChip": {
+    "message": "inferido"
+  },
+  "activityCommonSites": {
+    "message": "Sitios frecuentes: $1"
+  },
+  "activityTruncated": {
+    "message": "Mostrando los primeros $1 de $2 elementos."
+  },
+  "activityExplainInferred": {
+    "message": "La IA solo devuelve categorías, no su razonamiento. Organizer resume cada grupo a partir de los sitios y palabras que comparten sus elementos, así que el “por qué” de abajo es inferido."
+  },
+  "activityExplainBuiltin": {
+    "message": "Cada elemento se clasificó en tu dispositivo comparando su dirección, título y palabras clave de la página con el catálogo integrado."
+  },
+  "activityExplainProvider": {
+    "message": "El motivo mostrado para cada elemento lo devolvió tu proveedor de IA."
+  },
+  "activityWhyMatched": {
+    "message": "Coincidió con $1"
+  },
+  "activityWhyPopular": {
+    "message": "Sitio popular reconocido"
+  },
+  "activityItemGone": {
+    "message": "Elemento $1 (ya no disponible)"
+  },
+  "openActivityLabel": {
+    "message": "Mostrar la página de actividad de IA automáticamente"
+  },
+  "openActivityNote": {
+    "message": "Al organizar con IA, abre una pestaña con el progreso de cada sección, la categoría elegida para cada elemento y una explicación de la agrupación. También puedes abrirla desde el popup."
+  },
+  "viewAiDetailButton": {
+    "message": "Ver detalle de IA"
+  },
+  "bgUndoUnavailable": {
+    "message": "Esta organización no se puede deshacer."
   }
 }

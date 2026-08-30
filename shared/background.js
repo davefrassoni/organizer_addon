@@ -3,7 +3,7 @@ if (typeof OrganizerTopSites === "undefined" && typeof importScripts === "functi
 if (typeof OrganizerCategories === "undefined" && typeof importScripts === "function") importScripts("categories.js");
 const api = globalThis.browser || globalThis.chrome;
 const STORE = { tabs: "tabSessions", bookmarks: "bookmarkBackups", settings: "organizerSettings", aiJobs: "organizerAiJobs" };
-const DEFAULTS = { method: "ai", provider: "dave", apiKeys: {}, model: "", tabFallback: "reorder", closeDuplicateTabs: false, removeDuplicateBookmarks: false, bookmarkScope: "loose", excludeFoldersFromOrganizing: false, organizeInsideExcludedFolders: false };
+const DEFAULTS = { method: "ai", provider: "dave", apiKeys: {}, model: "", tabFallback: "reorder", closeDuplicateTabs: false, removeDuplicateBookmarks: false, bookmarkScope: "loose", excludeFoldersFromOrganizing: false, organizeInsideExcludedFolders: false, openActivityOnStart: true };
 const DAVE_AI_ENDPOINT = "https://davefrassoni.com";
 const PUBLIC_CLIENT_KEY = "organizer-addon-v1"; // Identifier, not a secret. Server validation provides security.
 // Live worker timings show 50 items balances throughput and ~22-33s inference time.
@@ -15,6 +15,10 @@ const DAVE_FETCH_TIMEOUT_MS = 20000;
 const JOB_ALARM = "organizer-ai-jobs";
 const JOB_KINDS = ["bookmarks", "tabs"];
 const ACTIVE_JOB_STATES = new Set(["queued", "processing", "applying"]);
+// The activity page shows an input->category row per item; cap what each job
+// stores so a huge bookmark library can't bloat extension storage.
+const ACTIVITY_ITEM_CAP = 2000;
+const ACTIVITY_PAGE = "activity/activity.html";
 const ALLOWED_URL = /^(https?|ftp):\/\//i;
 let jobOperation = Promise.resolve();
 
@@ -49,6 +53,52 @@ const notFoundError = error => /not found|can't find|no tab with id|no window wi
 function id() { return `${Date.now()}-${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)}`; }
 function cleanTab(tab) { return { url: tab.url, title: tab.title || tab.url, pinned: !!tab.pinned }; }
 function jobRef(item) { return { id: item.id, rootId: item.rootId, pinned: item.pinned, parentId: item.parentId, isFolder: !!item.isFolder, title: item.title }; }
+// A trimmed, capped copy of the organize input kept on the job so the activity
+// page can show every item next to the category it was given.
+function jobDetail(items) {
+  const kept = items.slice(0, ACTIVITY_ITEM_CAP);
+  return {
+    total: items.length,
+    truncated: items.length > kept.length,
+    items: kept.map(item => ({ title: item.title || "", url: item.url || "", pinned: !!item.pinned, isFolder: !!item.isFolder, tabId: Number.isInteger(item.id) ? item.id : undefined })),
+  };
+}
+// The grouping digest the activity page renders. "source" tells the page how
+// much it can say about the reasoning: the built-in method is fully explained
+// locally, a vendor AI may return a per-item reason, and Dave AI returns
+// categories only so each group's "why" is inferred from shared sites/words.
+function buildExplain(job) {
+  if (!job.detail || !Array.isArray(job.assignments)) return null;
+  const providerReasons = job.assignments.some(row => row.reason);
+  const source = job.method !== "ai" ? "builtin" : providerReasons ? "provider" : "inferred";
+  if (source === "builtin") job.detail.items.forEach((item, index) => { if (index < job.assignments.length && !item.why) item.why = OrganizerCategories.explain(item); });
+  return { source, categories: OrganizerCategories.summarizeCategories(job.detail.items, job.assignments) };
+}
+function canUndoJob(job) {
+  if (!job || job.state !== "completed" || job.undone) return false;
+  if (job.kind === "bookmarks") return !!job.backupId;
+  return job.kind === "tabs" && (job.useTabGroups || job.tabFallback === "reorder");
+}
+function fullAiJob(job) {
+  if (!job) return null;
+  return { ...publicAiJob(job), method: job.method || null, provider: job.provider || null, backupId: job.backupId || null, undone: job.undone || null, canUndo: canUndoJob(job), detail: job.detail || null, assignments: job.assignments || null, explain: job.explain || null };
+}
+async function maybeOpenActivity(kind) {
+  if (!api.tabs || !api.tabs.create) return;
+  try {
+    if ((await settings()).openActivityOnStart === false) return;
+    const base = api.runtime.getURL(ACTIVITY_PAGE);
+    const url = `${base}?kind=${kind}`;
+    let open = [];
+    try { open = await call(api.tabs, "query", { url: `${base}*` }); } catch (_) {}
+    if (open.length) {
+      await call(api.tabs, "update", open[0].id, { active: true, url });
+      if (api.windows && api.windows.update) await call(api.windows, "update", open[0].windowId, { focused: true }).catch(() => {});
+    } else {
+      await call(api.tabs, "create", { url });
+    }
+  } catch (_) {}
+}
 function validTabs(tabs) { return tabs.filter(tab => ALLOWED_URL.test(tab.url || "")); }
 
 async function saveTabs(closeAfter = false) {
@@ -164,16 +214,19 @@ function normalizeAssignments(raw, length) {
   const rows = Array.isArray(raw) ? raw : raw.assignments;
   if (!Array.isArray(rows)) throw new Error(t("bgAiInvalidResponse"));
   const map = new Map();
-  for (const row of rows) if (Number.isInteger(row.index) && row.index >= 0 && row.index < length && typeof row.category === "string") map.set(row.index, row.category.trim().replace(/[\\/:*?\"<>|]/g, " ").slice(0, 50) || "Other");
-  return Array.from({ length }, (_, index) => ({ index, category: map.get(index) || "Other" }));
+  for (const row of rows) if (Number.isInteger(row.index) && row.index >= 0 && row.index < length && typeof row.category === "string") {
+    const category = row.category.trim().replace(/[\\/:*?\"<>|]/g, " ").slice(0, 50) || "Other";
+    map.set(row.index, { category, reason: typeof row.reason === "string" ? row.reason.trim().slice(0, 160) : "" });
+  }
+  return Array.from({ length }, (_, index) => ({ index, ...(map.get(index) || { category: "Other", reason: "" }) }));
 }
 
 async function storedAiJobs() { return (await getLocal({ [STORE.aiJobs]: {} }))[STORE.aiJobs] || {}; }
 async function saveAiJobs(jobs) { await setLocal({ [STORE.aiJobs]: jobs }); }
 function publicAiJob(job) {
   if (!job) return null;
-  const { id: jobId, kind, state, count, progress, applyProgress, createdAt, updatedAt, error, categories } = job;
-  return { id: jobId, kind, state, count, progress, applyProgress, createdAt, updatedAt, error, categories };
+  const { id: jobId, kind, state, count, progress, applyProgress, createdAt, updatedAt, error, categories, method, provider } = job;
+  return { id: jobId, kind, state, count, progress, applyProgress, createdAt, updatedAt, error, categories, method, provider, hasDetail: !!job.detail, canUndo: canUndoJob(job) };
 }
 async function publicAiJobs() {
   const jobs = await storedAiJobs();
@@ -235,6 +288,7 @@ async function startDaveJob(kind, items, meta = {}) {
       progress: { completed: 0, total: created.chunks || 1 },
       applyProgress: 0,
       refs: items.map(jobRef),
+      detail: jobDetail(items),
       createdAt: now,
       updatedAt: now,
       expiresAt: created.expires_at || null,
@@ -244,6 +298,7 @@ async function startDaveJob(kind, items, meta = {}) {
     jobs[kind] = job;
     await saveAiJobs(jobs);
     createJobAlarm();
+    await maybeOpenActivity(kind);
     return { pending: true, job: publicAiJob(job) };
   });
 }
@@ -320,8 +375,8 @@ async function applyBookmarkJob(jobs, job) {
   job.state = "completed";
   job.categories = Object.keys(job.folderIds).length;
   job.error = job.skipped ? t("bgBookmarksSkipped", [String(job.skipped)]) : "";
+  job.explain = buildExplain(job);
   job.updatedAt = new Date().toISOString();
-  delete job.assignments;
   delete job.refs;
   delete job.folderIds;
   delete job.pruneCandidates;
@@ -379,8 +434,8 @@ async function applyTabJob(jobs, job) {
   job.state = "completed";
   job.categories = new Set(job.assignments.map(row => row.category)).size;
   job.error = job.skipped ? t("bgTabsSkipped", [String(job.skipped)]) : "";
+  job.explain = buildExplain(job);
   job.updatedAt = new Date().toISOString();
-  delete job.assignments;
   delete job.refs;
   delete job.groupIds;
   delete job.windowIds;
@@ -403,6 +458,7 @@ async function startLocalApplyJob(kind, items, assignments, meta = {}) {
       progress: { completed: 1, total: 1 },
       applyProgress: 0,
       refs: items.map(jobRef),
+      detail: jobDetail(items),
       assignments,
       createdAt: now,
       updatedAt: now,
@@ -412,6 +468,7 @@ async function startLocalApplyJob(kind, items, assignments, meta = {}) {
     jobs[kind] = job;
     await saveAiJobs(jobs);
     createJobAlarm();
+    await maybeOpenActivity(kind);
     await applyJob(jobs, job);
     await syncJobAlarm();
     return { pending: job.state !== "completed", job: publicAiJob(job) };
@@ -505,10 +562,53 @@ async function dismissAiJob(jobId) {
   });
 }
 
+async function retryAiJob(jobId) {
+  const jobs = await storedAiJobs();
+  const job = Object.values(jobs).find(candidate => candidate?.id === jobId);
+  if (!job) throw new Error(t("bgJobNotFound"));
+  if (ACTIVE_JOB_STATES.has(job.state)) throw new Error(t("bgJobAlreadyRunning"));
+  return job.kind === "bookmarks" ? organizeBookmarks() : organizeTabs();
+}
+
+// Undo puts back what an organize run changed. Bookmarks: the exact restore of
+// the backup taken right before organizing. Tabs: ungroup and return every tab
+// to its original position (the reorder itself closed nothing).
+async function undoTabOrganization(job) {
+  const order = job.detail?.items || [];
+  const tabIds = order.map(item => item.tabId).filter(Number.isInteger);
+  if (api.tabs.ungroup && tabIds.length) await call(api.tabs, "ungroup", tabIds).catch(() => {});
+  for (let index = 0; index < order.length; index++) {
+    const tabId = order[index].tabId;
+    if (!Number.isInteger(tabId)) continue;
+    try { await call(api.tabs, "move", tabId, { index }); }
+    catch (error) { if (!notFoundError(error)) throw error; }
+  }
+}
+
+async function undoAiJob(jobId) {
+  return serializeJobs(async () => {
+    const jobs = await storedAiJobs();
+    const job = Object.values(jobs).find(candidate => candidate?.id === jobId);
+    if (!job) throw new Error(t("bgJobNotFound"));
+    if (!canUndoJob(job)) throw new Error(t("bgUndoUnavailable"));
+    if (job.kind === "bookmarks") {
+      const backup = (await getLocal({ [STORE.bookmarks]: [] }))[STORE.bookmarks].find(entry => entry.id === job.backupId);
+      if (!backup) throw new Error(t("bgBackupNotFound"));
+      await restoreBookmarkSnapshot(backup);
+    } else {
+      await undoTabOrganization(job);
+    }
+    job.undone = job.kind;
+    job.updatedAt = new Date().toISOString();
+    await saveAiJobs(jobs);
+    return fullAiJob(job);
+  });
+}
+
 async function vendorAI(items, kind, config) {
   const key = config.apiKeys && config.apiKeys[config.provider];
   if (!key) throw new Error(t("bgAddApiKey", [config.provider]));
-  const instruction = `Categorize these ${kind}. Return JSON only as {"assignments":[{"index":0,"category":"Name"}]}. Every input index must occur once. Use concise, safe category names.`;
+  const instruction = `Categorize these ${kind}. Return JSON only as {"assignments":[{"index":0,"category":"Name","reason":"why, under 12 words"}]}. Every input index must occur once. Use concise, safe category names, and a short plain reason per item.`;
   let response;
   if (config.provider === "openai") response = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` }, body: JSON.stringify({ model: config.model || "gpt-4.1-mini", response_format: { type: "json_object" }, messages: [{ role: "system", content: instruction }, { role: "user", content: JSON.stringify(items) }] }) });
   else if (config.provider === "anthropic") response = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" }, body: JSON.stringify({ model: config.model || "claude-3-5-haiku-latest", max_tokens: 2048, system: instruction, messages: [{ role: "user", content: JSON.stringify(items) }] }) });
@@ -528,8 +628,9 @@ async function assign(items, kind, selectedSettings = null) {
 }
 
 async function organizeBookmarks() {
-  await saveBookmarks();
+  const backup = await saveBookmarks();
   const config = await settings();
+  const meta = { method: config.method, provider: config.method === "ai" ? config.provider : "builtin", backupId: backup.id };
   const roots = await bookmarkRoots();
   let items = config.bookmarkScope === "all" ? collectAllBookmarks(roots) : collectLooseBookmarks(roots, { excludeFolders: !!config.excludeFoldersFromOrganizing, organizeInsideExcluded: !!config.organizeInsideExcludedFolders });
   if (!items.length) throw new Error(t("bgNoBookmarksToOrganize"));
@@ -542,13 +643,13 @@ async function organizeBookmarks() {
     for (const item of split.duplicates) await call(api.bookmarks, "remove", item.id);
     items = [...split.unique, ...untouched];
   }
-  if (config.method === "ai" && config.provider === "dave") return startDaveJob("bookmarks", items);
+  if (config.method === "ai" && config.provider === "dave") return startDaveJob("bookmarks", items, meta);
   const assignments = await assign(items, "bookmarks", config);
-  return startLocalApplyJob("bookmarks", items, assignments);
+  return startLocalApplyJob("bookmarks", items, assignments, meta);
 }
 
 async function organizeTabs() {
-  await saveTabs(false);
+  const backup = await saveTabs(false);
   const config = await settings();
   let tabs = validTabs(await queryTabs({ currentWindow: true }));
   if (config.closeDuplicateTabs) {
@@ -558,7 +659,7 @@ async function organizeTabs() {
     tabs = split.unique;
   }
   const items = tabs.map(tab => ({ id: tab.id, title: tab.title || "", url: tab.url, pinned: !!tab.pinned }));
-  const meta = { tabFallback: config.tabFallback, useTabGroups: !!(api.tabs.group && api.tabGroups) };
+  const meta = { tabFallback: config.tabFallback, useTabGroups: !!(api.tabs.group && api.tabGroups), method: config.method, provider: config.method === "ai" ? config.provider : "builtin", backupId: backup.id };
   if (config.method === "ai" && config.provider === "dave") return startDaveJob("tabs", items, meta);
   const assignments = await assign(items, "tabs", config);
   return startLocalApplyJob("tabs", items, assignments, meta);
@@ -581,6 +682,15 @@ api.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.action === "cancelAiJob") return cancelStoredAiJob(message.id);
     if (message.action === "dismissAiJob") return dismissAiJob(message.id);
     if (message.action === "refreshAiJobs") { void resumeJobs(); return publicAiJobs(); }
+    if (message.action === "aiJobDetail") {
+      void resumeJobs();
+      const jobs = await storedAiJobs();
+      const mostRecent = Object.values(jobs).filter(Boolean).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0];
+      const job = (message.id && Object.values(jobs).find(candidate => candidate?.id === message.id)) || (JOB_KINDS.includes(message.kind) && jobs[message.kind]) || mostRecent || null;
+      return fullAiJob(job);
+    }
+    if (message.action === "retryAiJob") return retryAiJob(message.id);
+    if (message.action === "undoAiJob") return undoAiJob(message.id);
     throw new Error(t("bgUnknownAction"));
   })().then(result => sendResponse({ ok: true, result }), error => sendResponse({ ok: false, error: error.message }));
   return true;
