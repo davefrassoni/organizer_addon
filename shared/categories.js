@@ -72,6 +72,25 @@
     return { unique, duplicates };
   }
   const serializedBytes = item => new TextEncoder().encode(JSON.stringify(item)).length;
+  // The [start, end) chunk boundaries batchedAssignments would use, computed
+  // without calling any AI. The Dave server chunks the same way, so the
+  // activity page can show which items each processed section contained.
+  function chunkRanges(items, batchSize, maxSerializedBytes = Infinity) {
+    const ranges = [];
+    for (let offset = 0; offset < items.length;) {
+      let length = 0, bytes = 2;
+      while (offset + length < items.length && length < batchSize) {
+        const itemBytes = serializedBytes(items[offset + length]) + (length ? 1 : 0);
+        if (length && bytes + itemBytes > maxSerializedBytes) break;
+        length += 1;
+        bytes += itemBytes;
+      }
+      length = Math.max(1, length);
+      ranges.push([offset, offset + length]);
+      offset += length;
+    }
+    return ranges;
+  }
   async function batchedAssignments(items, batchSize, assignBatch, maxSerializedBytes = Infinity) {
     if (!Number.isInteger(batchSize) || batchSize < 1) throw new Error("Batch size must be a positive integer.");
     if (!(maxSerializedBytes > 0)) throw new Error("Batch byte limit must be positive.");
@@ -93,5 +112,5 @@
     }
     return combined;
   }
-  return { CATEGORIES, categoryFor, assignments, summarizeCategories, hostOf, splitDuplicateUrls, batchedAssignments };
+  return { CATEGORIES, categoryFor, assignments, summarizeCategories, hostOf, splitDuplicateUrls, batchedAssignments, chunkRanges };
 });

@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 require("../shared/top-sites.js");
-const { categoryFor, assignments, splitDuplicateUrls, batchedAssignments } = require("../shared/categories.js");
+const { categoryFor, assignments, splitDuplicateUrls, batchedAssignments, chunkRanges } = require("../shared/categories.js");
 test("recognizes common services", () => {
   assert.equal(categoryFor({ url: "https://github.com/openai/codex", title: "Code" }), "Development");
   assert.equal(categoryFor({ url: "https://mail.google.com/", title: "Inbox" }), "Communication");
@@ -31,6 +31,12 @@ test("combines AI batches while preserving indexes for large bookmark libraries"
   assert.equal(rows[49].category, "Batch 1");
   assert.equal(rows[50].category, "Batch 2");
   assert.equal(rows[100].category, "Batch 3");
+});
+test("chunkRanges reports the same boundaries batchedAssignments would use", () => {
+  const bySize = chunkRanges(Array.from({ length: 105 }, (_, index) => ({ url: `https://example.org/${index}` })), 50);
+  assert.deepEqual(bySize, [[0, 50], [50, 100], [100, 105]]);
+  const byBytes = chunkRanges(Array.from({ length: 5 }, (_, index) => ({ url: `https://example.org/${index}/${"x".repeat(30)}` })), 50, 150);
+  assert.deepEqual(byBytes, [[0, 2], [2, 4], [4, 5]]);
 });
 test("uses serialized byte size to keep unusually long links within the model context", async () => {
   const items = Array.from({ length: 5 }, (_, index) => ({ url: `https://example.org/${index}/${"x".repeat(30)}` }));

@@ -138,7 +138,7 @@ async function waitFor(predicate, timeout = 3000) {
 test("a 300-bookmark Dave job resumes after a background restart and applies every move", async () => {
   const bookmarks = Array.from({ length: 300 }, (_, index) => ({ id: `bookmark-${index}`, title: `Bookmark ${index}`, url: `https://example.com/${index}` }));
   const shared = {
-    storage: { organizerSettings: { method: "ai", provider: "dave", removeDuplicateBookmarks: false } },
+    storage: { organizerSettings: { method: "ai", provider: "dave", removeDuplicateBookmarks: false, keepBackupFolder: false } },
     bookmarks,
   };
   const remote = { status: "queued", progress: { completed: 0, total: 6 }, assignments: bookmarks.map((_, index) => ({ index, category: `Group ${index % 3}` })) };
@@ -223,7 +223,7 @@ test("reorganizing bookmarks with the default loose scope moves loose bookmarks 
       { id: "2", title: "Other Bookmarks", children: [] },
     ],
   }];
-  const shared = { storage: { organizerSettings: { method: "builtin" } }, tree };
+  const shared = { storage: { organizerSettings: { method: "builtin", keepBackupFolder: false } }, tree };
   const worker = backgroundHarness(shared, {});
   const result = await worker.message("organizeBookmarks");
   assert.equal(result.ok, true);
@@ -327,7 +327,7 @@ test("re-running loose organize adopts an existing category folder instead of ne
       ] },
     ],
   }];
-  const shared = { storage: { organizerSettings: { method: "builtin" } }, tree, assignCategory: () => "Development" };
+  const shared = { storage: { organizerSettings: { method: "builtin", keepBackupFolder: false } }, tree, assignCategory: () => "Development" };
   const worker = backgroundHarness(shared, {});
   const result = await worker.message("organizeBookmarks");
   assert.equal(result.ok, true);
@@ -456,8 +456,55 @@ test("undo restores the pre-organize backup for a completed bookmark job", async
 });
 
 test("the activity tab is not opened when the setting is off", async () => {
-  const shared = { storage: { organizerSettings: { method: "ai", provider: "dave", openActivityOnStart: false } }, bookmarks: [{ id: "b0", title: "X", url: "https://x.com" }] };
+  const shared = { storage: { organizerSettings: { method: "ai", provider: "dave", openActivityOnStart: false, keepBackupFolder: false } }, bookmarks: [{ id: "b0", title: "X", url: "https://x.com" }] };
   const worker = backgroundHarness(shared, { status: "queued", progress: { completed: 0, total: 6 }, assignments: [] });
   await worker.message("organizeBookmarks");
   assert.equal((shared.tabsCreated || []).length, 0);
+});
+
+test("organizing bookmarks stashes the old layout in a \"backup\" folder in the first root", async () => {
+  const tree = [{ id: "0", title: "", children: [
+    { id: "1", title: "Bookmarks Bar", children: [
+      { id: "b0", title: "GitHub", url: "https://github.com/a" },
+      { id: "f1", title: "Reading", children: [{ id: "b1", title: "Post", url: "https://blog.example.com/p" }] },
+    ] },
+  ] }];
+  const shared = { storage: { organizerSettings: { method: "builtin" } }, tree, assignCategory: () => "Stuff" };
+  const worker = backgroundHarness(shared, {});
+  await worker.message("organizeBookmarks");
+
+  const bar = shared.tree[0].children.find(node => node.id === "1");
+  const backup = bar.children.find(node => node.title === "backup" && !node.url);
+  assert.ok(backup, "a 'backup' folder is created in the first root");
+  assert.equal(backup.children.length, 1, "one dated subfolder per run");
+  assert.deepEqual(backup.children[0].children.map(node => node.title).sort(), ["GitHub", "Reading"]);
+  assert.deepEqual(backup.children[0].children.find(node => node.title === "Reading").children.map(node => node.url), ["https://blog.example.com/p"]);
+  // the backup folder itself is never organized
+  assert.ok(!shared.moves.some(move => move.id === backup.id));
+  assert.ok(bar.children.find(node => node.title === "Stuff").children.some(node => node.url === "https://github.com/a"));
+
+  // A second run adds another dated folder and never copies the backup folder into itself.
+  await worker.message("organizeBookmarks");
+  assert.equal(bar.children.find(node => node.title === "backup").children.length, 2);
+  assert.ok(!bar.children.find(node => node.title === "backup").children.some(stamp => (stamp.children || []).some(node => node.title === "backup")));
+});
+
+test("keepBackupFolder off skips the visible backup folder", async () => {
+  const tree = [{ id: "0", title: "", children: [
+    { id: "1", title: "Bookmarks Bar", children: [{ id: "b0", title: "GitHub", url: "https://github.com/a" }] },
+  ] }];
+  const shared = { storage: { organizerSettings: { method: "builtin", keepBackupFolder: false } }, tree, assignCategory: () => "Stuff" };
+  const worker = backgroundHarness(shared, {});
+  await worker.message("organizeBookmarks");
+  assert.ok(!shared.tree[0].children.find(node => node.id === "1").children.some(node => node.title === "backup"));
+});
+
+test("a Dave job records contiguous section ranges the activity detail can slice by", async () => {
+  const bookmarks = Array.from({ length: 120 }, (_, index) => ({ id: `b${index}`, title: `B${index}`, url: `https://example.com/${index}` }));
+  const shared = { storage: { organizerSettings: { method: "ai", provider: "dave", keepBackupFolder: false } }, bookmarks };
+  const remote = { status: "queued", progress: { completed: 0, total: 6 }, assignments: bookmarks.map((_, index) => ({ index, category: `G${index % 3}` })) };
+  const worker = backgroundHarness(shared, remote);
+  await worker.message("organizeBookmarks");
+  const sections = (await worker.message("aiJobDetail", { kind: "bookmarks" })).result.sections;
+  assert.deepEqual(sections, [[0, 50], [50, 100], [100, 120]]);
 });

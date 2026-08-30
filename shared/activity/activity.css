@@ -24,8 +24,15 @@ button:hover{border-color:#776d9c}
 button:disabled{opacity:.6;cursor:default}
 #retry{background:var(--accent);border-color:var(--accent)}
 button.danger{color:var(--danger)}
-.batches{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-.batches li{display:flex;align-items:center;gap:10px;font-size:14px}
+.sections{display:grid;gap:8px}
+.section{border:1px solid var(--line);border-radius:9px;background:#161b24}
+.section summary{cursor:pointer;padding:10px 12px;display:flex;align-items:center;gap:10px;list-style:none;font-size:14px}
+.section summary::-webkit-details-marker{display:none}
+.section-label{flex:1}
+.section ul{list-style:none;margin:0;padding:0 12px 10px 32px;display:grid;gap:6px}
+.section li{display:grid;gap:1px;font-size:13px}
+.section li .sub{color:var(--muted);font-size:12px}
+.section-note{margin:0 12px 10px 32px;font-size:13px}
 .dot{width:10px;height:10px;border-radius:50%;flex:none;background:#3a465c}
 .dot.done{background:var(--success)}
 .dot.active{background:var(--accent);animation:pulse 1s ease-in-out infinite}

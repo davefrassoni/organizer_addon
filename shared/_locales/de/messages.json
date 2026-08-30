@@ -520,5 +520,14 @@
   },
   "languageAuto": {
     "message": "Automatisch (Browsersprache)"
+  },
+  "activitySectionPending": {
+    "message": "Die Kategorien erscheinen hier, sobald dieser Abschnitt fertig ist."
+  },
+  "keepBackupFolderLabel": {
+    "message": "Alte Anordnung in einem Ordner \"backup\" behalten"
+  },
+  "keepBackupFolderNote": {
+    "message": "Vor dem Organisieren der Lesezeichen die aktuelle Anordnung in einen datierten Ordner in \"backup\" in deiner ersten Lesezeichen-Wurzel kopieren. Bei sehr großen Sammlungen ausschalten."
   }
 }
