@@ -48,7 +48,6 @@ details.cat summary{cursor:pointer;padding:10px 12px;display:flex;align-items:ce
 details.cat summary::-webkit-details-marker{display:none}
 details.cat summary strong{flex:1}
 .count{font-size:12px;color:var(--muted)}
-.chip{font-size:11px;padding:2px 7px;border-radius:99px;background:#2c2a4d;color:#c9bfff}
 .cat-why{margin:0 12px 8px;color:var(--muted);font-size:13px}
 .cat ul{list-style:none;margin:0;padding:0 12px 10px;display:grid;gap:6px}
 .cat li{display:grid;gap:1px}
