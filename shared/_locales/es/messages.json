@@ -257,12 +257,6 @@
   "aiAccessNotGranted": {
     "message": "No se concedió acceso a la IA; no se cambió la configuración."
   },
-  "builtinCategoriesHeading": {
-    "message": "Categorías integradas"
-  },
-  "builtinCategoriesNotice": {
-    "message": "El reconocimiento sin conexión incluye 10.000 dominios populares, además de títulos, metadatos y palabras clave del dominio."
-  },
   "aboutHeading": {
     "message": "Acerca de Organizer"
   },
@@ -271,60 +265,6 @@
   },
   "aboutLink": {
     "message": "Visitar el sitio de Organizer →"
-  },
-  "categoryWorkProductivity": {
-    "message": "Trabajo y productividad"
-  },
-  "categoryDevelopment": {
-    "message": "Desarrollo"
-  },
-  "categoryCommunication": {
-    "message": "Comunicación"
-  },
-  "categorySocial": {
-    "message": "Redes sociales"
-  },
-  "categoryNewsReading": {
-    "message": "Noticias y lectura"
-  },
-  "categoryVideoMusic": {
-    "message": "Video y música"
-  },
-  "categoryShopping": {
-    "message": "Compras"
-  },
-  "categoryFinance": {
-    "message": "Finanzas"
-  },
-  "categoryTravelMaps": {
-    "message": "Viajes y mapas"
-  },
-  "categoryEducation": {
-    "message": "Educación"
-  },
-  "categoryScienceReference": {
-    "message": "Ciencia y referencia"
-  },
-  "categoryHealthFitness": {
-    "message": "Salud y estado físico"
-  },
-  "categorySports": {
-    "message": "Deportes"
-  },
-  "categoryGaming": {
-    "message": "Videojuegos"
-  },
-  "categoryGovernment": {
-    "message": "Gobierno y servicios públicos"
-  },
-  "categoryFood": {
-    "message": "Comida y recetas"
-  },
-  "categoryRealEstate": {
-    "message": "Hogar e inmuebles"
-  },
-  "categoryAiTools": {
-    "message": "Herramientas de IA"
   },
   "bgNoRestorableTabs": {
     "message": "No hay pestañas restaurables en esta ventana."
@@ -538,5 +478,53 @@
   },
   "settingsGroupBookmarks": {
     "message": "Marcadores"
+  },
+  "settingsGroupCategories": {
+    "message": "Categorías"
+  },
+  "categoriesNote": {
+    "message": "Las pestañas y los marcadores se ordenan en estas categorías. Renómbralas, elimínalas o añade las tuyas. Lo que no encaje en ninguna va a \"Other\"."
+  },
+  "categoryNameLabel": {
+    "message": "Nombre de la categoría"
+  },
+  "categoryDelete": {
+    "message": "Eliminar $1"
+  },
+  "categoryAddPlaceholder": {
+    "message": "Nueva categoría"
+  },
+  "categoryAddButton": {
+    "message": "Añadir"
+  },
+  "categoryCount": {
+    "message": "$1 de $2"
+  },
+  "categoryReset": {
+    "message": "Restablecer las categorías de Organizer"
+  },
+  "categoryErrorEmpty": {
+    "message": "Añade al menos una categoría."
+  },
+  "categoryErrorInvalid": {
+    "message": "\"$1\" solo puede usar letras, números, espacios y & ' ( ) , . + - (hasta 40 caracteres)."
+  },
+  "categoryErrorDuplicate": {
+    "message": "\"$1\" ya está en la lista."
+  },
+  "categoryErrorLimit": {
+    "message": "Puedes tener hasta $1 categorías."
+  },
+  "categoriesBuiltinNote": {
+    "message": "El método integrado sin conexión solo reconoce las categorías originales de Organizer (las renombradas siguen funcionando). Las categorías que añadas las usa la IA."
+  },
+  "unsavedChanges": {
+    "message": "Cambios sin guardar"
+  },
+  "categoryFixBeforeSaving": {
+    "message": "Corrige la categoría marcada para guardar."
+  },
+  "categoryErrorBlank": {
+    "message": "El nombre de una categoría no puede estar vacío."
   }
 }

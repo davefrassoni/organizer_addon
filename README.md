@@ -20,13 +20,21 @@ Whenever an AI organize job starts, Organizer opens `activity/activity.html` in 
 
 Restoring a bookmark backup reproduces the snapshot exactly. Each root the snapshot covers (matched to a live root by id, then title, then position) has its current contents cleared and the saved subtree rebuilt in original order, so a restore undoes an organize run completely — no leftover category folders, no folders left empty, no duplicated bookmarks. A restore first saves a fresh backup of the pre-restore tree, so it is itself undoable. Roots the snapshot doesn't include are left alone.
 
+## Your categories
+
+Settings → Categories holds the list everything is sorted into. It starts as Organizer's own 18 categories, and people can rename, delete, add (up to 30 names of up to 40 characters: letters, numbers, spaces and `& ' ( ) , . + -`) and reset it; it applies to both tabs and bookmarks. The list is stored as `categories` in `organizerSettings` (`null` while it still equals the defaults, so a future default update reaches people who never customized it), as `{ id, name }` entries where Organizer's own entries keep a `b:<original name>` id through renames.
+
+- **Dave AI** receives the names as an optional `categories` field. The server validates them against the same rules, puts them in its own prompt, and maps every answer case-insensitively onto the list; anything off-list becomes `Other`. Requests without the field (older versions) still use the server's shared taxonomy.
+- **OpenAI / Claude / Gemini** get the same closed list in the instruction, and their answers are snapped onto it the same way client-side (`OrganizerCategories.matchCategory`).
+- **The built-in offline method** keeps keyword-matching Organizer's original categories, then follows the person's list by id: a renamed category gets its new name, a deleted one becomes `Other`, and categories they added are only used by the AI methods. The domain fallback (`Popular Websites` / hostname) is unchanged.
+
 ## Privacy and AI
 
 The built-in organization method is local and sends nothing anywhere. AI is the default method; when the user organizes, titles and URLs are sent to the chosen provider after permission is granted. Vendor keys are supplied by the user, stored in local extension storage, and sent only to that vendor. Dave AI requires no user secret and accepts only a strict, size-limited link categorization schema—never arbitrary prompts. See [PRIVACY.md](PRIVACY.md).
 
 ## Localization
 
-Messages live in `shared/_locales/*/messages.json` (English, Spanish, French, German, Portuguese, Italian). `shared/i18n.js` (`OrganizerI18n`) localizes the popup, settings, and activity pages: `init()` reads the `uiLanguage` setting, and when it is a specific locale it `fetch`es that `_locales/<lang>/messages.json` and layers it over the browser default; `"auto"` (the default) uses the browser UI language when it is one of the six, otherwise English. `apply()` fills `data-i18n`/`data-i18n-placeholder`/`data-i18n-title` attributes and `t(key, subs)` does `$1`/`$2` substitution, falling back to English then to `api.i18n.getMessage`. The Language selector at the top of Settings sets `uiLanguage`. `background.js` still calls `api.i18n.getMessage` directly (its strings are error/skip notices). Category names stay canonical English since they become real bookmark folder and tab group titles; only their presentation as chips on the options page is translated.
+Messages live in `shared/_locales/*/messages.json` (English, Spanish, French, German, Portuguese, Italian). `shared/i18n.js` (`OrganizerI18n`) localizes the popup, settings, and activity pages: `init()` reads the `uiLanguage` setting, and when it is a specific locale it `fetch`es that `_locales/<lang>/messages.json` and layers it over the browser default; `"auto"` (the default) uses the browser UI language when it is one of the six, otherwise English. `apply()` fills `data-i18n`/`data-i18n-placeholder`/`data-i18n-title` attributes and `t(key, subs)` does `$1`/`$2` substitution, falling back to English then to `api.i18n.getMessage`. The Language selector at the top of Settings sets `uiLanguage`. `background.js` still calls `api.i18n.getMessage` directly (its strings are error/skip notices). Organizer's default category names stay canonical English since they become real bookmark folder and tab group titles; people can rename them in Settings → Categories.
 
 ## Top-sites catalog
 

@@ -257,12 +257,6 @@
   "aiAccessNotGranted": {
     "message": "L'accès à l'IA n'a pas été accordé ; les paramètres n'ont pas été modifiés."
   },
-  "builtinCategoriesHeading": {
-    "message": "Catégories intégrées"
-  },
-  "builtinCategoriesNotice": {
-    "message": "La reconnaissance hors ligne comprend 10 000 domaines populaires, ainsi que les titres, métadonnées et mots-clés de domaine."
-  },
   "aboutHeading": {
     "message": "À propos d'Organizer"
   },
@@ -271,60 +265,6 @@
   },
   "aboutLink": {
     "message": "Visiter le site d'Organizer →"
-  },
-  "categoryWorkProductivity": {
-    "message": "Travail et productivité"
-  },
-  "categoryDevelopment": {
-    "message": "Développement"
-  },
-  "categoryCommunication": {
-    "message": "Communication"
-  },
-  "categorySocial": {
-    "message": "Réseaux sociaux"
-  },
-  "categoryNewsReading": {
-    "message": "Actualités et lecture"
-  },
-  "categoryVideoMusic": {
-    "message": "Vidéo et musique"
-  },
-  "categoryShopping": {
-    "message": "Shopping"
-  },
-  "categoryFinance": {
-    "message": "Finance"
-  },
-  "categoryTravelMaps": {
-    "message": "Voyages et cartes"
-  },
-  "categoryEducation": {
-    "message": "Éducation"
-  },
-  "categoryScienceReference": {
-    "message": "Sciences et référence"
-  },
-  "categoryHealthFitness": {
-    "message": "Santé et forme physique"
-  },
-  "categorySports": {
-    "message": "Sports"
-  },
-  "categoryGaming": {
-    "message": "Jeux vidéo"
-  },
-  "categoryGovernment": {
-    "message": "Administration et services publics"
-  },
-  "categoryFood": {
-    "message": "Cuisine et recettes"
-  },
-  "categoryRealEstate": {
-    "message": "Maison et immobilier"
-  },
-  "categoryAiTools": {
-    "message": "Outils d'IA"
   },
   "bgNoRestorableTabs": {
     "message": "Aucun onglet restaurable dans cette fenêtre."
@@ -538,5 +478,53 @@
   },
   "settingsGroupBookmarks": {
     "message": "Marque-pages"
+  },
+  "settingsGroupCategories": {
+    "message": "Catégories"
+  },
+  "categoriesNote": {
+    "message": "Les onglets et les favoris sont classés dans ces catégories. Renommez-les, supprimez-les ou ajoutez les vôtres. Ce qui ne correspond à aucune va dans « Other »."
+  },
+  "categoryNameLabel": {
+    "message": "Nom de la catégorie"
+  },
+  "categoryDelete": {
+    "message": "Supprimer $1"
+  },
+  "categoryAddPlaceholder": {
+    "message": "Nouvelle catégorie"
+  },
+  "categoryAddButton": {
+    "message": "Ajouter"
+  },
+  "categoryCount": {
+    "message": "$1 sur $2"
+  },
+  "categoryReset": {
+    "message": "Rétablir les catégories d'Organizer"
+  },
+  "categoryErrorEmpty": {
+    "message": "Ajoutez au moins une catégorie."
+  },
+  "categoryErrorInvalid": {
+    "message": "« $1 » ne peut contenir que des lettres, des chiffres, des espaces et & ' ( ) , . + - (40 caractères max.)."
+  },
+  "categoryErrorDuplicate": {
+    "message": "« $1 » est déjà dans la liste."
+  },
+  "categoryErrorLimit": {
+    "message": "Vous pouvez avoir jusqu'à $1 catégories."
+  },
+  "categoriesBuiltinNote": {
+    "message": "La méthode intégrée hors ligne ne reconnaît que les catégories d'origine d'Organizer (celles renommées fonctionnent toujours). Les catégories que vous ajoutez sont utilisées par l'IA."
+  },
+  "unsavedChanges": {
+    "message": "Modifications non enregistrées"
+  },
+  "categoryFixBeforeSaving": {
+    "message": "Corrigez la catégorie signalée pour enregistrer."
+  },
+  "categoryErrorBlank": {
+    "message": "Le nom d’une catégorie ne peut pas être vide."
   }
 }

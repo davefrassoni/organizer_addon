@@ -10,11 +10,11 @@ The built-in organizer, backup, restore, import, and export features operate loc
 
 ## Optional AI organization
 
-AI organization with Dave AI is the default organization method, but no data is sent until the user presses an Organize button and grants the browser's requested access. Organizer sends only the titles, URLs, and limited metadata of the tabs or bookmarks the user asks it to organize. It does not send page bodies, cookies, form contents, unrelated browsing history, or arbitrary prompts. Users can select the built-in offline method at any time.
+AI organization with Dave AI is the default organization method, but no data is sent until the user presses an Organize button and grants the browser's requested access. Organizer sends only the titles, URLs, and limited metadata of the tabs or bookmarks the user asks it to organize, plus the names in the user's category list. It does not send page bodies, cookies, form contents, unrelated browsing history, or arbitrary prompts. Users can select the built-in offline method at any time.
 
 The user chooses the processor:
 
-- **Dave AI:** data is sent over HTTPS to `davefrassoni.com` solely to return category assignments. Requests accept only a size-limited organizer schema and a server-authored prompt. Link-bearing job payloads are erased when processing reaches a completed or failed state; category assignments and minimal operational status may remain for maintenance and abuse prevention.
+- **Dave AI:** data is sent over HTTPS to `davefrassoni.com` solely to return category assignments. Requests accept only a size-limited organizer schema (links plus up to 30 short category names restricted to letters, numbers, spaces and basic punctuation) and a server-authored prompt. Link-bearing job payloads are erased when processing reaches a completed or failed state; category assignments and minimal operational status may remain for maintenance and abuse prevention.
 - **OpenAI, Anthropic, or Google Gemini:** data is sent directly from the extension to the selected provider using the API key supplied by the user. That provider's privacy policy and retention terms apply. Dave Frassoni does not receive these requests or API keys.
 
 Provider API keys are stored in extension-local browser storage, are never included in exports, and are sent only to the provider selected by the user. Browser permissions for external AI access are requested when the user enables that provider.

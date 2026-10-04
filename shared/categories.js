@@ -112,5 +112,44 @@
     }
     return combined;
   }
-  return { CATEGORIES, categoryFor, assignments, summarizeCategories, hostOf, splitDuplicateUrls, batchedAssignments, chunkRanges };
+  // The person's own category list: Organizer's categories to start with, then
+  // added to, renamed and deleted in Settings. Each entry is { id, name };
+  // Organizer's own entries keep a "b:<original name>" id through renames, so
+  // the offline method can still route to them. Limits match the Dave AI server.
+  const MAX_USER_CATEGORIES = 30;
+  const MAX_CATEGORY_NAME = 40;
+  const CATEGORY_NAME_RE = /^[\p{L}\p{M}\p{N}_][\p{L}\p{M}\p{N}_ &'(),.+\-]{0,39}$/u;
+  const FALLBACK_CATEGORY = "Other";
+  function defaultCategoryList() { return CATEGORIES.map(category => ({ id: `b:${category.name}`, name: category.name })); }
+  function cleanCategoryName(name) { return String(name || "").replace(/\s+/g, " ").trim(); }
+  // Returns null when the list is usable, otherwise { code, name? }.
+  function categoryListProblem(list) {
+    if (!Array.isArray(list) || !list.length) return { code: "empty" };
+    if (list.length > MAX_USER_CATEGORIES) return { code: "limit" };
+    const seen = new Set();
+    for (const entry of list) {
+      const name = cleanCategoryName(entry && entry.name);
+      if (!CATEGORY_NAME_RE.test(name)) return { code: "invalid", name };
+      if (seen.has(name.toLowerCase())) return { code: "duplicate", name };
+      seen.add(name.toLowerCase());
+    }
+    return null;
+  }
+  function userCategoryList(stored) { return categoryListProblem(stored) ? defaultCategoryList() : stored.map(entry => ({ id: String(entry.id), name: cleanCategoryName(entry.name) })); }
+  function userCategoryNames(stored) { return userCategoryList(stored).map(entry => entry.name); }
+  // Snap an AI answer onto the person's list (case-insensitively); anything
+  // off-list lands in "Other".
+  function matchCategory(name, names) {
+    const wanted = cleanCategoryName(name).toLowerCase();
+    return names.find(candidate => candidate.toLowerCase() === wanted) || FALLBACK_CATEGORY;
+  }
+  // Offline method: keyword matches use the person's name for that category,
+  // a deleted one becomes "Other", and the domain fallback is unchanged.
+  function applyUserCategories(rows, stored) {
+    const byId = new Map(userCategoryList(stored).map(entry => [entry.id, entry.name]));
+    const builtin = new Set(CATEGORIES.map(category => category.name));
+    return rows.map(row => builtin.has(row.category) ? { index: row.index, category: byId.get(`b:${row.category}`) || FALLBACK_CATEGORY } : row);
+  }
+
+  return { CATEGORIES, categoryFor, assignments, summarizeCategories, hostOf, splitDuplicateUrls, batchedAssignments, chunkRanges, MAX_USER_CATEGORIES, MAX_CATEGORY_NAME, FALLBACK_CATEGORY, defaultCategoryList, cleanCategoryName, categoryListProblem, userCategoryList, userCategoryNames, matchCategory, applyUserCategories };
 });

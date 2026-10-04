@@ -257,12 +257,6 @@
   "aiAccessNotGranted": {
     "message": "KI-Zugriff wurde nicht gewährt; die Einstellungen wurden nicht geändert."
   },
-  "builtinCategoriesHeading": {
-    "message": "Integrierte Kategorien"
-  },
-  "builtinCategoriesNotice": {
-    "message": "Die Offline-Erkennung umfasst 10.000 beliebte Domains sowie Titel, Metadaten und Domain-Schlüsselwörter."
-  },
   "aboutHeading": {
     "message": "Über Organizer"
   },
@@ -271,60 +265,6 @@
   },
   "aboutLink": {
     "message": "Organizer-Website besuchen →"
-  },
-  "categoryWorkProductivity": {
-    "message": "Arbeit & Produktivität"
-  },
-  "categoryDevelopment": {
-    "message": "Entwicklung"
-  },
-  "categoryCommunication": {
-    "message": "Kommunikation"
-  },
-  "categorySocial": {
-    "message": "Soziale Netzwerke"
-  },
-  "categoryNewsReading": {
-    "message": "Nachrichten & Lesen"
-  },
-  "categoryVideoMusic": {
-    "message": "Video & Musik"
-  },
-  "categoryShopping": {
-    "message": "Einkaufen"
-  },
-  "categoryFinance": {
-    "message": "Finanzen"
-  },
-  "categoryTravelMaps": {
-    "message": "Reisen & Karten"
-  },
-  "categoryEducation": {
-    "message": "Bildung"
-  },
-  "categoryScienceReference": {
-    "message": "Wissenschaft & Nachschlagewerke"
-  },
-  "categoryHealthFitness": {
-    "message": "Gesundheit & Fitness"
-  },
-  "categorySports": {
-    "message": "Sport"
-  },
-  "categoryGaming": {
-    "message": "Gaming"
-  },
-  "categoryGovernment": {
-    "message": "Behörden & öffentliche Dienste"
-  },
-  "categoryFood": {
-    "message": "Essen & Rezepte"
-  },
-  "categoryRealEstate": {
-    "message": "Wohnen & Immobilien"
-  },
-  "categoryAiTools": {
-    "message": "KI-Tools"
   },
   "bgNoRestorableTabs": {
     "message": "In diesem Fenster gibt es keine wiederherstellbaren Tabs."
@@ -538,5 +478,53 @@
   },
   "settingsGroupBookmarks": {
     "message": "Lesezeichen"
+  },
+  "settingsGroupCategories": {
+    "message": "Kategorien"
+  },
+  "categoriesNote": {
+    "message": "Tabs und Lesezeichen werden in diese Kategorien sortiert. Benenne sie um, lösche sie oder füge eigene hinzu. Was zu keiner passt, landet in „Other“."
+  },
+  "categoryNameLabel": {
+    "message": "Kategoriename"
+  },
+  "categoryDelete": {
+    "message": "$1 löschen"
+  },
+  "categoryAddPlaceholder": {
+    "message": "Neue Kategorie"
+  },
+  "categoryAddButton": {
+    "message": "Hinzufügen"
+  },
+  "categoryCount": {
+    "message": "$1 von $2"
+  },
+  "categoryReset": {
+    "message": "Auf die Kategorien von Organizer zurücksetzen"
+  },
+  "categoryErrorEmpty": {
+    "message": "Füge mindestens eine Kategorie hinzu."
+  },
+  "categoryErrorInvalid": {
+    "message": "„$1“ darf nur Buchstaben, Ziffern, Leerzeichen und & ' ( ) , . + - enthalten (bis zu 40 Zeichen)."
+  },
+  "categoryErrorDuplicate": {
+    "message": "„$1“ ist bereits in der Liste."
+  },
+  "categoryErrorLimit": {
+    "message": "Du kannst bis zu $1 Kategorien haben."
+  },
+  "categoriesBuiltinNote": {
+    "message": "Die integrierte Offline-Methode erkennt nur die ursprünglichen Kategorien von Organizer (umbenannte funktionieren weiterhin). Hinzugefügte Kategorien nutzt die KI."
+  },
+  "unsavedChanges": {
+    "message": "Ungespeicherte Änderungen"
+  },
+  "categoryFixBeforeSaving": {
+    "message": "Korrigiere die markierte Kategorie, um zu speichern."
+  },
+  "categoryErrorBlank": {
+    "message": "Ein Kategoriename darf nicht leer sein."
   }
 }

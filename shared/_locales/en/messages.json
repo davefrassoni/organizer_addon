@@ -257,12 +257,6 @@
   "aiAccessNotGranted": {
     "message": "AI access was not granted; settings were not changed."
   },
-  "builtinCategoriesHeading": {
-    "message": "Built-in categories"
-  },
-  "builtinCategoriesNotice": {
-    "message": "Offline recognition includes 10,000 popular domains plus titles, metadata, and domain keywords."
-  },
   "aboutHeading": {
     "message": "About Organizer"
   },
@@ -271,60 +265,6 @@
   },
   "aboutLink": {
     "message": "Visit the Organizer website →"
-  },
-  "categoryWorkProductivity": {
-    "message": "Work & Productivity"
-  },
-  "categoryDevelopment": {
-    "message": "Development"
-  },
-  "categoryCommunication": {
-    "message": "Communication"
-  },
-  "categorySocial": {
-    "message": "Social"
-  },
-  "categoryNewsReading": {
-    "message": "News & Reading"
-  },
-  "categoryVideoMusic": {
-    "message": "Video & Music"
-  },
-  "categoryShopping": {
-    "message": "Shopping"
-  },
-  "categoryFinance": {
-    "message": "Finance"
-  },
-  "categoryTravelMaps": {
-    "message": "Travel & Maps"
-  },
-  "categoryEducation": {
-    "message": "Education"
-  },
-  "categoryScienceReference": {
-    "message": "Science & Reference"
-  },
-  "categoryHealthFitness": {
-    "message": "Health & Fitness"
-  },
-  "categorySports": {
-    "message": "Sports"
-  },
-  "categoryGaming": {
-    "message": "Gaming"
-  },
-  "categoryGovernment": {
-    "message": "Government & Public Services"
-  },
-  "categoryFood": {
-    "message": "Food & Recipes"
-  },
-  "categoryRealEstate": {
-    "message": "Home & Real Estate"
-  },
-  "categoryAiTools": {
-    "message": "AI Tools"
   },
   "bgNoRestorableTabs": {
     "message": "There are no restorable tabs in this window."
@@ -538,5 +478,53 @@
   },
   "settingsGroupBookmarks": {
     "message": "Bookmarks"
+  },
+  "settingsGroupCategories": {
+    "message": "Categories"
+  },
+  "categoriesNote": {
+    "message": "Tabs and bookmarks are sorted into these categories. Rename, delete or add your own. Anything that fits none of them goes to \"Other\"."
+  },
+  "categoryNameLabel": {
+    "message": "Category name"
+  },
+  "categoryDelete": {
+    "message": "Delete $1"
+  },
+  "categoryAddPlaceholder": {
+    "message": "New category"
+  },
+  "categoryAddButton": {
+    "message": "Add"
+  },
+  "categoryCount": {
+    "message": "$1 of $2"
+  },
+  "categoryReset": {
+    "message": "Reset to Organizer's categories"
+  },
+  "categoryErrorEmpty": {
+    "message": "Add at least one category."
+  },
+  "categoryErrorInvalid": {
+    "message": "\"$1\" can only use letters, numbers, spaces and & ' ( ) , . + - (up to 40 characters)."
+  },
+  "categoryErrorDuplicate": {
+    "message": "\"$1\" is already in the list."
+  },
+  "categoryErrorLimit": {
+    "message": "You can have up to $1 categories."
+  },
+  "categoriesBuiltinNote": {
+    "message": "The built-in offline method only recognizes Organizer's original categories (renamed ones still work). Categories you add are used by AI."
+  },
+  "unsavedChanges": {
+    "message": "Unsaved changes"
+  },
+  "categoryFixBeforeSaving": {
+    "message": "Fix the highlighted category to save."
+  },
+  "categoryErrorBlank": {
+    "message": "A category name can't be empty."
   }
 }

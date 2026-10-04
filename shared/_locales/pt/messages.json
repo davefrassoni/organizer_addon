@@ -257,12 +257,6 @@
   "aiAccessNotGranted": {
     "message": "O acesso à IA não foi concedido; as configurações não foram alteradas."
   },
-  "builtinCategoriesHeading": {
-    "message": "Categorias integradas"
-  },
-  "builtinCategoriesNotice": {
-    "message": "O reconhecimento offline inclui 10.000 domínios populares, além de títulos, metadados e palavras-chave de domínio."
-  },
   "aboutHeading": {
     "message": "Sobre o Organizer"
   },
@@ -271,60 +265,6 @@
   },
   "aboutLink": {
     "message": "Visitar o site do Organizer →"
-  },
-  "categoryWorkProductivity": {
-    "message": "Trabalho e produtividade"
-  },
-  "categoryDevelopment": {
-    "message": "Desenvolvimento"
-  },
-  "categoryCommunication": {
-    "message": "Comunicação"
-  },
-  "categorySocial": {
-    "message": "Redes sociais"
-  },
-  "categoryNewsReading": {
-    "message": "Notícias e leitura"
-  },
-  "categoryVideoMusic": {
-    "message": "Vídeo e música"
-  },
-  "categoryShopping": {
-    "message": "Compras"
-  },
-  "categoryFinance": {
-    "message": "Finanças"
-  },
-  "categoryTravelMaps": {
-    "message": "Viagens e mapas"
-  },
-  "categoryEducation": {
-    "message": "Educação"
-  },
-  "categoryScienceReference": {
-    "message": "Ciência e referência"
-  },
-  "categoryHealthFitness": {
-    "message": "Saúde e fitness"
-  },
-  "categorySports": {
-    "message": "Esportes"
-  },
-  "categoryGaming": {
-    "message": "Jogos"
-  },
-  "categoryGovernment": {
-    "message": "Governo e serviços públicos"
-  },
-  "categoryFood": {
-    "message": "Culinária e receitas"
-  },
-  "categoryRealEstate": {
-    "message": "Casa e imóveis"
-  },
-  "categoryAiTools": {
-    "message": "Ferramentas de IA"
   },
   "bgNoRestorableTabs": {
     "message": "Não há abas restauráveis nesta janela."
@@ -538,5 +478,53 @@
   },
   "settingsGroupBookmarks": {
     "message": "Marcadores"
+  },
+  "settingsGroupCategories": {
+    "message": "Categorias"
+  },
+  "categoriesNote": {
+    "message": "Abas e favoritos são organizados nestas categorias. Renomeie, exclua ou adicione as suas. O que não se encaixar em nenhuma vai para \"Other\"."
+  },
+  "categoryNameLabel": {
+    "message": "Nome da categoria"
+  },
+  "categoryDelete": {
+    "message": "Excluir $1"
+  },
+  "categoryAddPlaceholder": {
+    "message": "Nova categoria"
+  },
+  "categoryAddButton": {
+    "message": "Adicionar"
+  },
+  "categoryCount": {
+    "message": "$1 de $2"
+  },
+  "categoryReset": {
+    "message": "Restaurar as categorias do Organizer"
+  },
+  "categoryErrorEmpty": {
+    "message": "Adicione pelo menos uma categoria."
+  },
+  "categoryErrorInvalid": {
+    "message": "\"$1\" só pode usar letras, números, espaços e & ' ( ) , . + - (até 40 caracteres)."
+  },
+  "categoryErrorDuplicate": {
+    "message": "\"$1\" já está na lista."
+  },
+  "categoryErrorLimit": {
+    "message": "Você pode ter até $1 categorias."
+  },
+  "categoriesBuiltinNote": {
+    "message": "O método integrado offline só reconhece as categorias originais do Organizer (as renomeadas continuam funcionando). As categorias que você adicionar são usadas pela IA."
+  },
+  "unsavedChanges": {
+    "message": "Alterações não salvas"
+  },
+  "categoryFixBeforeSaving": {
+    "message": "Corrija a categoria destacada para salvar."
+  },
+  "categoryErrorBlank": {
+    "message": "O nome de uma categoria não pode ficar vazio."
   }
 }

@@ -100,6 +100,7 @@ function backgroundHarness(shared, remoteState) {
       async batchedAssignments(items, _size, assignBatch) { return assignBatch(items); },
     },
     fetch: async (url, options = {}) => {
+      if (options.method === "POST" && /\/organizer\/jobs\/$/.test(url)) (shared.daveRequests ||= []).push(JSON.parse(options.body));
       if (options.method === "POST" && /\/organizer\/jobs\/$/.test(url)) return response({ id: "parent-job", status: "queued", chunks: 6, timeout_seconds: 900, expires_at: "2099-01-01T00:00:00Z" }, 201);
       if (/\/organizer\/jobs\/parent-job\/$/.test(url)) {
         if (remoteState.status !== "completed") return response({ id: "parent-job", status: remoteState.status, progress: remoteState.progress, result: null, error: "" });
@@ -138,7 +139,7 @@ async function waitFor(predicate, timeout = 3000) {
 test("a 300-bookmark Dave job resumes after a background restart and applies every move", async () => {
   const bookmarks = Array.from({ length: 300 }, (_, index) => ({ id: `bookmark-${index}`, title: `Bookmark ${index}`, url: `https://example.com/${index}` }));
   const shared = {
-    storage: { organizerSettings: { method: "ai", provider: "dave", removeDuplicateBookmarks: false, keepBackupFolder: false } },
+    storage: { organizerSettings: { method: "ai", provider: "dave", removeDuplicateBookmarks: false, keepBackupFolder: false, categories: [{ id: "u0", name: "Group 0" }, { id: "u1", name: "Group 1" }, { id: "u2", name: "Group 2" }] } },
     bookmarks,
   };
   const remote = { status: "queued", progress: { completed: 0, total: 6 }, assignments: bookmarks.map((_, index) => ({ index, category: `Group ${index % 3}` })) };
@@ -172,7 +173,7 @@ test("a 300-bookmark Dave job resumes after a background restart and applies eve
 
 test("a Dave tab-organize job resumes after a background restart and groups every tab", async () => {
   const tabs = Array.from({ length: 40 }, (_, index) => ({ id: index + 1, title: `Tab ${index}`, url: `https://example.com/${index}`, pinned: false }));
-  const shared = { storage: { organizerSettings: { method: "ai", provider: "dave" } }, tabsList: tabs };
+  const shared = { storage: { organizerSettings: { method: "ai", provider: "dave", categories: [{ id: "u0", name: "Group 0" }, { id: "u1", name: "Group 1" }, { id: "u2", name: "Group 2" }, { id: "u3", name: "Group 3" }] } }, tabsList: tabs };
   const remote = { status: "queued", progress: { completed: 0, total: 1 }, assignments: tabs.map((_, index) => ({ index, category: `Group ${index % 4}` })) };
   const firstWorker = backgroundHarness(shared, remote);
   const submitted = await firstWorker.message("organizeTabs");
@@ -390,7 +391,7 @@ test("the activity detail exposes per-item categories and a per-category site di
     { id: "b1", title: "GitLab", url: "https://gitlab.com/b" },
     { id: "b2", title: "YouTube", url: "https://youtube.com/c" },
   ];
-  const shared = { storage: { organizerSettings: { method: "ai", provider: "dave" } }, bookmarks };
+  const shared = { storage: { organizerSettings: { method: "ai", provider: "dave", categories: [{ id: "u0", name: "Development" }, { id: "u1", name: "Video" }] } }, bookmarks };
   const remote = { status: "queued", progress: { completed: 0, total: 6 }, assignments: [
     { index: 0, category: "Development" }, { index: 1, category: "Development" }, { index: 2, category: "Video" },
   ] };
@@ -516,7 +517,7 @@ test("keepBackupFolder off skips the visible backup folder", async () => {
 
 test("a Dave job records contiguous section ranges the activity detail can slice by", async () => {
   const bookmarks = Array.from({ length: 120 }, (_, index) => ({ id: `b${index}`, title: `B${index}`, url: `https://example.com/${index}` }));
-  const shared = { storage: { organizerSettings: { method: "ai", provider: "dave", keepBackupFolder: false } }, bookmarks };
+  const shared = { storage: { organizerSettings: { method: "ai", provider: "dave", keepBackupFolder: false, categories: [{ id: "u0", name: "G0" }, { id: "u1", name: "G1" }, { id: "u2", name: "G2" }] } }, bookmarks };
   const remote = { status: "queued", progress: { completed: 0, total: 6 }, assignments: bookmarks.map((_, index) => ({ index, category: `G${index % 3}` })) };
   const worker = backgroundHarness(shared, remote);
   await worker.message("organizeBookmarks");
@@ -535,4 +536,40 @@ test("Dave section completion timestamps accrue while the job is processing", as
   const job = (await worker.message("aiJobDetail", { kind: "bookmarks" })).result;
   assert.ok(job.processingStartedAt, "processing start is recorded");
   assert.ok((job.sectionCompletedAt || []).length >= 1, "a section completion time is recorded");
+});
+
+test("Dave AI gets the person's category list and off-list answers land in Other", async () => {
+  const bookmarks = [
+    { id: "b0", title: "GitHub", url: "https://github.com/a" },
+    { id: "b1", title: "Recipe", url: "https://allrecipes.com/b" },
+    { id: "b2", title: "Shop", url: "https://amazon.com/c" },
+  ];
+  const shared = { storage: { organizerSettings: { method: "ai", provider: "dave", keepBackupFolder: false, openActivityOnStart: false, categories: [{ id: "b:Development", name: "Code" }, { id: "u1", name: "Recetas & Cocina" }] } }, bookmarks };
+  const remote = { status: "queued", progress: { completed: 0, total: 1 }, assignments: [
+    { index: 0, category: "code" }, { index: 1, category: "Recetas & Cocina" }, { index: 2, category: "Shopping" },
+  ] };
+  const worker = backgroundHarness(shared, remote);
+  await worker.message("organizeBookmarks");
+  assert.deepEqual(shared.daveRequests[0].categories, ["Code", "Recetas & Cocina"]);
+  remote.status = "completed";
+  worker.alarm();
+  await waitFor(() => shared.storage.organizerAiJobs.bookmarks.state === "completed");
+  const job = shared.storage.organizerAiJobs.bookmarks;
+  assert.equal(job.state, "completed");
+  assert.deepEqual(job.assignments.map(row => row.category), ["Code", "Recetas & Cocina", "Other"]);
+  for (const name of ["Code", "Recetas & Cocina", "Other"]) assert.ok(shared.created.some(node => node.title === name), name);
+});
+
+test("the offline method follows renamed and deleted categories", async () => {
+  const tree = [{ id: "0", title: "", children: [{ id: "1", title: "Bookmarks Bar", children: [
+    { id: "b0", title: "GH", url: "https://github.com/x" },
+    { id: "b1", title: "Shop", url: "https://amazon.com/x" },
+  ] }] }];
+  const shared = { storage: { organizerSettings: { method: "builtin", keepBackupFolder: false, categories: [{ id: "b:Development", name: "Code" }, { id: "u1", name: "Mine" }] } }, tree, assignCategory: item => (/github/.test(item.url) ? "Development" : "Shopping") };
+  const worker = backgroundHarness(shared, {});
+  await worker.message("organizeBookmarks");
+  const titles = shared.created.map(node => node.title);
+  assert.ok(titles.includes("Code"));
+  assert.ok(titles.includes("Other"));
+  assert.ok(!titles.includes("Development") && !titles.includes("Shopping"));
 });
